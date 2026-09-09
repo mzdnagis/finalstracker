@@ -4,8 +4,7 @@ const { Pool } = require("pg");
 
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
-
+app.use(express.static(path.join(__dirname, ".")));
 // --- Connexion PostgreSQL ---
 // Coolify fournit l'URL de connexion via la variable DATABASE_URL.
 const pool = new Pool({
