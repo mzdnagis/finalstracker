@@ -3,211 +3,292 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>finalstracker — Suivi World Tour</title>
+<title>finalstracker — World Tour</title>
+<link rel="icon" href="data:,">
 <style>
   :root{
-    --void:#08090c;--void-2:#0e1015;--panel:rgba(255,255,255,.015);
-    --line:rgba(255,255,255,.12);--line-soft:rgba(255,255,255,.055);
-    --ink:#f4f5f8;--ink-dim:#8c93a0;--ink-faint:#565d6a;
-    --red:#ff2247;--red-soft:#ff4d68;--red-deep:#c00f30;
-    --cyan:#28e0e0;--cyan-soft:#5cf0f0;
+    --red:#f5402b;--red-dk:#d8331f;--red-line:rgba(0,0,0,.14);
+    --ink:#111013;--cream:#ece4d6;--cream-dim:rgba(236,228,214,.62);
+    --ink-dim:rgba(17,16,19,.62);--ink-faint:rgba(17,16,19,.34);
+    --yellow:#ffe14d;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
-  body{background:var(--void);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden}
+  body{background:var(--red);color:var(--ink);font-family:"Arial Narrow","Helvetica Neue",Arial,system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
   .mono{font-family:"SF Mono","Consolas",monospace}
-  /* étoile 4 branches réutilisable */
-  .spark{display:inline-block;flex-shrink:0}
-  /* HERO */
-  .hero{position:relative;min-height:78vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:64px 24px 44px;overflow:hidden;isolation:isolate}
-  /* liserés fins : une ligne horizontale traversante + cadre d'angle */
-  .hero-lines{position:absolute;inset:0;z-index:-1;pointer-events:none}
-  .hero-lines line{stroke:var(--line-soft);stroke-width:1}
-  .hero-lines .accent{stroke:var(--red);stroke-width:1;opacity:.5}
-  .hero-lines .accent-cy{stroke:var(--cyan);stroke-width:1;opacity:.32}
-  .hbar{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--line) 20%,var(--line) 80%,transparent)}
-  .star-lg{width:22px;height:22px;margin:0 auto 34px;filter:drop-shadow(0 0 10px rgba(255,34,71,.7))}
-  .kicker{font-size:11px;letter-spacing:.46em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:30px;font-weight:500;padding-left:.46em;display:flex;align-items:center;gap:14px;justify-content:center}
-  .kicker .k-spark{width:9px;height:9px;opacity:.8}
-  .count-wrap{display:flex;align-items:baseline;justify-content:center;gap:18px;margin-bottom:20px}
-  .count-num{font-size:clamp(76px,17vw,164px);font-weight:200;line-height:.86;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-  .count-unit{font-size:clamp(14px,3vw,19px);color:var(--ink-dim);font-weight:400;letter-spacing:.14em;text-transform:uppercase}
-  .hero-sub{font-size:15px;color:var(--ink-dim);max-width:430px;line-height:1.7;margin:0 auto;font-weight:300}
-  .hero-sub b{color:var(--red-soft);font-weight:400}
-  .brandline{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:11px;font-size:15px;font-weight:500;letter-spacing:.34em;text-transform:uppercase;color:var(--ink)}
-  .brandline .b-spark{width:13px;height:13px}
-  .brandline .tag{color:var(--red)}
-  /* CONTENU */
-  .content{max-width:1080px;margin:0 auto;padding:0 24px 90px}
-  .progress-block{padding:56px 0;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);position:relative}
-  /* petite étoile d'angle décorative */
-  .corner-spark{position:absolute;width:11px;height:11px;opacity:.5}
-  .progress-block .corner-spark{top:-6px;right:0;color:var(--cyan)}
-  .pg-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:26px}
-  .pg-target{display:flex;align-items:center;gap:16px}
-  .pg-target .ic{width:30px;height:30px;color:var(--red);flex-shrink:0}
-  .pg-target .l{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-dim);font-weight:500}
-  .pg-target .v{font-size:24px;font-weight:300;margin-top:4px;letter-spacing:.01em}
-  .pg-target .v b{color:var(--red-soft);font-weight:400}
-  .pg-now{text-align:right}
-  .pg-now .big{font-size:clamp(30px,6vw,44px);font-weight:200;font-variant-numeric:tabular-nums;line-height:1}
-  .pg-now .small{font-size:13px;color:var(--ink-dim);margin-top:6px}
-  .edit-link{background:none;border:none;color:var(--ink-dim);cursor:pointer;font-family:inherit;font-size:12px;letter-spacing:.16em;text-transform:uppercase;padding:6px 0;border-bottom:1px solid var(--line);transition:.2s;margin-top:10px}
-  .edit-link:hover{color:var(--red-soft);border-color:var(--red)}
-  .track{height:2px;background:var(--line);position:relative;margin:8px 0}
-  .track-fill{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,var(--red-deep),var(--red));transition:width .8s cubic-bezier(.2,.8,.2,1)}
-  .track-star{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;transition:left .8s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 7px rgba(255,34,71,.9))}
-  .track-meta{display:flex;justify-content:space-between;margin-top:16px;font-size:12px;color:var(--ink-faint);letter-spacing:.04em}
-  .track-meta .cur{color:var(--red-soft)}
-  .badges-row{display:grid;grid-template-columns:1fr 1fr;gap:0}
-  .badge-cell{padding:30px 0;display:flex;align-items:center;gap:16px}
-  .badge-cell:first-child{border-right:1px solid var(--line-soft);padding-right:30px}
-  .badge-cell:last-child{padding-left:30px}
-  .badge-glyph{width:44px;height:44px;border:1px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:500;letter-spacing:.05em;flex-shrink:0;color:var(--red-soft);position:relative}
-  .badge-cell .l{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);font-weight:500}
-  .badge-cell .v{font-size:18px;font-weight:300;margin-top:3px}
-  .sec-title{display:flex;align-items:center;gap:14px;margin:70px 0 30px}
-  .sec-title .ic{width:20px;height:20px;color:var(--red);flex-shrink:0}
-  .sec-title h2{font-size:13px;letter-spacing:.3em;text-transform:uppercase;font-weight:500;color:var(--ink)}
-  .sec-title .rule{flex:1;height:1px;background:var(--line-soft)}
-  .sec-title .end-spark{width:10px;height:10px;color:var(--cyan);opacity:.6}
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
-  .stat{background:var(--void);padding:26px 22px}
-  .stat .ic{width:20px;height:20px;color:var(--red);margin-bottom:16px}
-  .stat .v{font-size:30px;font-weight:200;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.01em}
-  .stat .v.pos{color:var(--red-soft)}
-  .stat .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);margin-top:12px;font-weight:500;line-height:1.4}
-  .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:1px}
-  .calc{background:var(--void);padding:34px 26px;position:relative}
-  .calc .lbl{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);font-weight:500;margin-bottom:16px;display:flex;align-items:center;gap:10px}
-  .calc .lbl .l-spark{width:9px;height:9px;color:var(--red);opacity:.8}
-  .calc .num{font-size:clamp(38px,7vw,56px);font-weight:200;line-height:.95;font-variant-numeric:tabular-nums;color:var(--ink)}
-  .calc .num b{color:var(--red-soft);font-weight:200}
-  .calc .desc{font-size:13px;color:var(--ink-dim);margin-top:14px;line-height:1.6;font-weight:300}
-  .calc .desc b{color:var(--ink);font-weight:400}
-  #chart{width:100%;height:280px;display:block;margin-top:8px}
-  .chart-empty{height:280px;display:grid;place-items:center;color:var(--ink-faint);font-size:13px;text-align:center;line-height:1.7;font-weight:300}
-  .entry{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;padding:34px 0;border-top:1px solid var(--line-soft)}
-  .field{flex:1;min-width:150px}
-  .field label{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;font-weight:500}
-  .field input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--line);color:var(--ink);padding:10px 0;font-size:17px;font-family:inherit;font-weight:300;transition:.2s}
+  /* grille de fond technique */
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(var(--red-line) 1px,transparent 1px),linear-gradient(90deg,var(--red-line) 1px,transparent 1px);
+    background-size:64px 64px;opacity:.5}
+  .wrap{position:relative;z-index:1}
+  #fatal{display:none;background:var(--ink);color:var(--red);padding:14px 20px;font-size:13px;font-family:"Consolas",monospace}
+
+  /* barre nav technique */
+  .topnav{display:flex;align-items:stretch;border-bottom:1.5px solid var(--ink);position:relative;z-index:2}
+  .topnav .logo{display:flex;align-items:center;gap:10px;padding:16px 22px;border-right:1.5px solid var(--ink);font-weight:900;letter-spacing:-.02em;font-size:19px;text-transform:uppercase}
+  .topnav .logo .lspark{width:15px;height:15px}
+  .topnav .nav-mid{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:34px;padding:0 26px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+  .topnav .status{display:flex;align-items:center;gap:10px;padding:16px 22px;border-left:1.5px solid var(--ink);font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+  .topnav .status .led{width:9px;height:9px;border-radius:50%;background:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+  @media(max-width:720px){.topnav .nav-mid{display:none}}
+
+  /* bandeau coordonnées */
+  .coordbar{display:flex;justify-content:space-between;align-items:center;padding:12px 22px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;border-bottom:1px solid var(--red-line)}
+  .coordbar .r{display:flex;align-items:center;gap:12px}
+  .coordbar .tick{width:38px;height:1.5px;background:var(--ink)}
+
+  /* HERO géant */
+  .hero{position:relative;padding:30px 22px 44px;overflow:hidden}
+  .hero-huge{font-weight:900;text-transform:uppercase;line-height:.78;letter-spacing:-.04em;font-stretch:condensed;color:var(--ink);
+    font-size:clamp(120px,34vw,420px);white-space:nowrap;margin-left:-.02em}
+  .hero-huge .cream{color:var(--cream);display:block;font-size:.42em;letter-spacing:-.02em;margin-top:.04em}
+  .hero-huge .unit{font-size:.16em;font-weight:800;letter-spacing:.04em;-webkit-text-stroke:0;vertical-align:super;margin-left:.1em}
+  /* compte à rebours temps réel */
+  .clock{display:flex;align-items:stretch;gap:0;margin-top:22px;border:1.5px solid var(--ink);width:fit-content;max-width:100%}
+  .clock .seg{padding:14px 20px;border-right:1.5px solid var(--ink);text-align:center;min-width:78px}
+  .clock .seg:last-child{border-right:none}
+  .clock .seg .n{font-size:clamp(30px,5vw,46px);font-weight:900;line-height:.9;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .clock .seg .l{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);font-weight:700;margin-top:6px}
+  .clock .sep{display:flex;align-items:center;padding:0 4px;font-size:28px;font-weight:900;color:var(--ink-faint)}
+  @media(max-width:560px){.clock .seg{min-width:60px;padding:12px 12px}}
+  /* encart intro noir facon image */
+  .hero-card{background:var(--ink);color:var(--cream);max-width:430px;padding:26px 28px 24px;margin-top:34px}
+  .hero-card p{font-family:"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.5;margin-bottom:22px}
+  .hero-card p b{color:#fff}
+  .hero-card .actions{display:flex;align-items:stretch;gap:0;border:1px solid rgba(236,228,214,.28)}
+  .hero-card .actions button{flex:1;background:none;border:none;color:var(--cream);padding:14px 16px;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;transition:.15s}
+  .hero-card .actions button:first-child{background:var(--cream);color:var(--ink);border-right:1px solid rgba(236,228,214,.28)}
+  .hero-card .actions button:hover{opacity:.85}
+
+  /* panneau data bas de hero */
+  .datastrip{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--ink);margin-top:40px}
+  .datastrip .cell{padding:16px 18px;border-right:1.5px solid var(--ink)}
+  .datastrip .cell:last-child{border-right:none}
+  .datastrip .cell .k{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink-dim);margin-bottom:7px}
+  .datastrip .cell .v{font-size:19px;font-weight:900;letter-spacing:-.01em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .datastrip .cell .v .led{width:8px;height:8px;border-radius:50%;background:var(--yellow)}
+
+  .content{padding:0 22px 90px}
+  .section{border-top:1.5px solid var(--ink);padding:28px 0}
+  .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:26px}
+  .sec-head .no{font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--ink-dim)}
+  .sec-head h2{font-size:clamp(26px,4vw,40px);font-weight:900;text-transform:uppercase;letter-spacing:-.02em;font-stretch:condensed}
+  .sec-head .rule{flex:1;height:1.5px;background:var(--ink);align-self:center}
+
+  /* saisie */
+  .entry{display:flex;gap:0;flex-wrap:wrap;border:1.5px solid var(--ink)}
+  .field{flex:1;min-width:160px;padding:16px 18px;border-right:1.5px solid var(--ink)}
+  .field label{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px;font-weight:700}
+  .field input{width:100%;background:transparent;border:none;color:var(--ink);font-size:20px;font-family:inherit;font-weight:700;padding:0}
   .field input::placeholder{color:var(--ink-faint)}
-  .field input:focus{outline:none;border-color:var(--red)}
-  .btn{background:var(--red);color:#fff;border:none;padding:14px 34px;font-weight:500;font-size:13px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:.2s}
-  .btn:hover{background:var(--red-soft)}
+  .field input:focus{outline:none}
+  .entry .addcell{display:flex}
+  .btn{background:var(--ink);color:var(--cream);border:none;padding:0 40px;font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
+  .btn:hover{background:#000}
   .btn:disabled{opacity:.4;cursor:not-allowed}
-  .hint{font-size:12px;color:var(--ink-faint);margin-top:20px;line-height:1.7;font-weight:300}
-  .hist{list-style:none}
-  .hist li{display:grid;grid-template-columns:auto 1fr auto auto auto auto;gap:20px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line-soft);font-weight:300}
-  .hist .idx{font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums;width:24px}
-  .hist .date{font-size:13px;color:var(--ink-dim)}
-  .hist .pts{font-size:17px;font-variant-numeric:tabular-nums;text-align:right}
-  .hist .badge-mini{font-size:12px;color:var(--ink-dim);text-align:right;letter-spacing:.02em}
-  .hist .delta{font-size:13px;font-variant-numeric:tabular-nums;text-align:right;min-width:56px}
-  .hist .delta.pos{color:var(--red-soft)} .hist .delta.neg{color:var(--ink-faint)}
-  .hist .del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:15px;line-height:1;padding:4px;transition:.2s}
-  .hist .del:hover{color:var(--red)}
-  .hist-empty{color:var(--ink-faint);font-size:13px;padding:30px 0;font-weight:300}
-  .modal-bg{position:fixed;inset:0;background:rgba(5,6,9,.9);backdrop-filter:blur(6px);display:none;place-items:center;padding:24px;z-index:50}
+  .hint{font-size:11px;color:var(--ink-dim);margin-top:14px;line-height:1.6;font-weight:600;letter-spacing:.02em}
+
+  /* progression */
+  .pg-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+  .pg-target .l{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);font-weight:700;margin-bottom:6px}
+  .pg-target .v{font-size:30px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;font-stretch:condensed}
+  .pg-now{text-align:right}
+  .pg-now .big{font-size:clamp(40px,8vw,72px);font-weight:900;line-height:.9;letter-spacing:-.03em}
+  .pg-now .small{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);font-weight:700;margin-top:4px}
+  .edit-link{background:var(--ink);color:var(--cream);border:none;cursor:pointer;font-family:inherit;font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:8px 14px;font-weight:700;margin-top:10px}
+  .track{height:12px;border:1.5px solid var(--ink);position:relative;margin:6px 0}
+  .track-fill{position:absolute;top:0;left:0;height:100%;background:var(--ink);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+  .track-meta{display:flex;justify-content:space-between;margin-top:12px;font-size:11px;color:var(--ink-dim);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .track-meta .cur{color:var(--ink)}
+  .badges-row{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--ink);margin-top:22px}
+  .badge-cell{padding:20px;display:flex;align-items:center;gap:14px}
+  .badge-cell:first-child{border-right:1.5px solid var(--ink)}
+  .badge-glyph{width:46px;height:46px;border:1.5px solid var(--ink);display:grid;place-items:center;font-size:14px;font-weight:900;flex-shrink:0}
+  .badge-cell .l{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);font-weight:700}
+  .badge-cell .v{font-size:18px;font-weight:900;margin-top:3px;text-transform:uppercase;font-stretch:condensed}
+
+  .calc-row{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--ink)}
+  .calc-row-3{grid-template-columns:1fr 1fr 1fr}
+  @media(max-width:820px){.calc-row-3{grid-template-columns:1fr}.calc-row-3 .calc{border-right:none;border-bottom:1.5px solid var(--ink)}.calc-row-3 .calc:last-child{border-bottom:none}}
+  .calc{padding:26px 22px;border-right:1.5px solid var(--ink)}
+  .calc:last-child{border-right:none}
+  .calc .lbl{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);font-weight:700;margin-bottom:14px}
+  .calc .num{font-size:clamp(44px,8vw,68px);font-weight:900;line-height:.88;letter-spacing:-.03em}
+  .calc .desc{font-size:12px;color:var(--ink-dim);margin-top:14px;line-height:1.55;font-weight:600}
+  .calc .desc b{color:var(--ink);font-weight:800}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);border:1.5px solid var(--ink)}
+  .stat{padding:20px 18px;border-right:1.5px solid var(--ink)}
+  .stat:last-child{border-right:none}
+  .stat .v{font-size:34px;font-weight:900;line-height:.9;letter-spacing:-.02em}
+  .stat .k{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-dim);margin-top:10px;font-weight:700;line-height:1.3}
+  @media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2){border-right:none}.stat:nth-child(1),.stat:nth-child(2){border-bottom:1.5px solid var(--ink)}}
+
+  #chart{width:100%;height:300px;display:block;border:1.5px solid var(--ink);background:rgba(0,0,0,.04)}
+  .chart-empty{height:300px;display:grid;place-items:center;border:1.5px solid var(--ink);color:var(--ink-dim);font-size:13px;text-align:center;line-height:1.7;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+
+  .hist{list-style:none;border:1.5px solid var(--ink);border-bottom:none}
+  .hist li{display:grid;grid-template-columns:auto 1fr auto auto auto auto;gap:18px;align-items:center;padding:15px 18px;border-bottom:1.5px solid var(--ink);font-weight:700}
+  .hist .idx{font-size:11px;color:var(--ink-dim);width:26px}
+  .hist .date{font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+  .hist .pts{font-size:18px;font-weight:900;text-align:right}
+  .hist .badge-mini{font-size:11px;color:var(--ink-dim);text-align:right;text-transform:uppercase;letter-spacing:.04em}
+  .hist .delta{font-size:12px;text-align:right;min-width:52px;font-weight:800}
+  .hist .delta.pos{color:var(--ink)} .hist .delta.neg{color:var(--ink-faint)}
+  .hist .del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:16px;line-height:1;padding:4px;font-weight:700}
+  .hist .del:hover{color:var(--ink)}
+  .hist-empty{border:1.5px solid var(--ink);color:var(--ink-dim);font-size:12px;padding:26px 18px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(17,16,19,.6);backdrop-filter:blur(3px);display:none;place-items:center;padding:24px;z-index:50}
   .modal-bg.on{display:grid}
-  .modal{background:var(--void-2);border:1px solid var(--line);max-width:460px;width:100%;padding:40px;position:relative}
-  .modal .m-spark{position:absolute;top:18px;right:18px;width:12px;height:12px;color:var(--cyan);opacity:.6}
-  .modal .star-lg{width:20px;height:20px;margin:0 0 20px}
-  .modal h3{font-size:20px;font-weight:300;margin-bottom:8px;letter-spacing:.02em}
-  .modal p.sub{font-size:13px;color:var(--ink-dim);margin-bottom:28px;line-height:1.6;font-weight:300}
-  .modal .field{margin-bottom:24px}
-  .modal select{width:100%;background:transparent;border:none;border-bottom:1px solid var(--line);color:var(--ink);padding:10px 0;font-size:16px;font-family:inherit;font-weight:300}
-  .modal select:focus{outline:none;border-color:var(--red)}
-  .modal select option{background:var(--void-2)}
-  .modal-actions{display:flex;gap:16px;margin-top:34px}
-  .modal-actions button{flex:1}
-  .btn-ghost{background:none;border:1px solid var(--line);color:var(--ink-dim);padding:14px;cursor:pointer;font-family:inherit;font-size:13px;letter-spacing:.1em;text-transform:uppercase;transition:.2s}
-  .btn-ghost:hover{border-color:var(--ink-dim);color:var(--ink)}
-  .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--void-2);border:1px solid var(--line);color:var(--ink);padding:14px 26px;font-size:13px;font-weight:300;letter-spacing:.04em;opacity:0;transition:.3s;z-index:60;pointer-events:none}
+  .modal{background:var(--red);border:1.5px solid var(--ink);max-width:460px;width:100%;padding:32px}
+  .modal h3{font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:8px;font-stretch:condensed}
+  .modal p.sub{font-size:12px;color:var(--ink-dim);margin-bottom:26px;line-height:1.55;font-weight:600}
+  .modal .field{border:1.5px solid var(--ink);margin-bottom:16px;padding:14px 16px}
+  .modal select{width:100%;background:transparent;border:none;color:var(--ink);font-size:17px;font-family:inherit;font-weight:700}
+  .modal select:focus{outline:none}
+  .modal select option{background:var(--red)}
+  .modal-actions{display:flex;gap:0;margin-top:26px;border:1.5px solid var(--ink)}
+  .modal-actions button{flex:1;padding:14px;cursor:pointer;font-family:inherit;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;border:none}
+  .btn-ghost{background:transparent;color:var(--ink);border-right:1.5px solid var(--ink)!important}
+  .btn-ghost:hover{background:rgba(0,0,0,.06)}
+
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);border:none;color:var(--cream);padding:14px 26px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:0;transition:.3s;z-index:60;pointer-events:none}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-  .toast.err{border-color:var(--red);color:var(--red-soft)}
-  @media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:560px){.badges-row{grid-template-columns:1fr}.badge-cell:first-child{border-right:none;border-bottom:1px solid var(--line-soft);padding-right:0}.badge-cell:last-child{padding-left:0}.calc-row{grid-template-columns:1fr}.pg-head{flex-direction:column;align-items:flex-start}.pg-now{text-align:left}}
+  .toast.err{background:#000;color:var(--yellow)}
+
+  @media(max-width:560px){.badges-row,.calc-row{grid-template-columns:1fr}.badge-cell:first-child{border-right:none;border-bottom:1.5px solid var(--ink)}.calc{border-right:none;border-bottom:1.5px solid var(--ink)}.calc:last-child{border-bottom:none}.datastrip{grid-template-columns:1fr}.datastrip .cell{border-right:none;border-bottom:1.5px solid var(--ink)}.datastrip .cell:last-child{border-bottom:none}.entry .addcell{width:100%}.btn{width:100%;padding:16px}}
   @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<header class="hero">
-  <svg class="hero-lines" id="heroLines" preserveAspectRatio="none"></svg>
-  <svg class="spark star-lg" viewBox="0 0 24 24" fill="none"><path d="M12 0 L13.4 10.6 L24 12 L13.4 13.4 L12 24 L10.6 13.4 L0 12 L10.6 10.6 Z" fill="#ff2247"/></svg>
-  <div class="kicker">
-    <svg class="spark k-spark" viewBox="0 0 24 24"><path d="M12 0 L13.4 10.6 L24 12 L13.4 13.4 L12 24 L10.6 13.4 L0 12 L10.6 10.6 Z" fill="#28e0e0"/></svg>
-    World Tour · Saison en cours
-    <svg class="spark k-spark" viewBox="0 0 24 24"><path d="M12 0 L13.4 10.6 L24 12 L13.4 13.4 L12 24 L10.6 13.4 L0 12 L10.6 10.6 Z" fill="#28e0e0"/></svg>
+<div id="fatal"></div>
+<div class="wrap">
+
+  <nav class="topnav">
+    <div class="logo">
+      <svg class="lspark" viewBox="0 0 24 24"><path d="M12 0 L13.6 10.4 L24 12 L13.6 13.6 L12 24 L10.4 13.6 L0 12 L10.4 10.4 Z" fill="#111013"/></svg>
+      FINALSTRACKER
+    </div>
+    <div class="nav-mid">
+      <span>Objectif</span><span>Progression</span><span>Stats</span><span>Historique</span>
+    </div>
+    <div class="status"><span class="led"></span>World Tour / Actif</div>
+  </nav>
+
+  <div class="coordbar">
+    <span>Suivi World Tour / The Finals</span>
+    <span class="r"><span class="tick"></span>Saison / 01</span>
   </div>
-  <div class="count-wrap"><span class="count-num" id="daysLeft">43</span><span class="count-unit" id="daysUnit">jours restants</span></div>
-  <p class="hero-sub">Objectif <b id="heroTarget">Émeraude 4</b>. Chaque match compte pour atteindre le badge avant la fin de saison.</p>
-  <div class="brandline">
-    <svg class="spark b-spark" viewBox="0 0 24 24" fill="none"><path d="M12 1 L13.3 10.7 L23 12 L13.3 13.3 L12 23 L10.7 13.3 L1 12 L10.7 10.7 Z" fill="#ff2247"/></svg>
-    finals<span class="tag">tracker</span>
-  </div>
-</header>
-<main class="content">
-  <section class="progress-block">
-    <svg class="spark corner-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg>
-    <div class="pg-head">
-      <div class="pg-target">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
-        <div><div class="l">Objectif</div><div class="v"><b id="targetRank">Émeraude 4</b> · <span id="targetPts">1 800</span> pts</div></div>
-      </div>
-      <div class="pg-now">
-        <div class="big" id="curPts">0</div><div class="small">points accumulés</div>
-        <button class="edit-link" id="openSettings">Changer l'objectif</button>
+
+  <header class="hero">
+    <div class="hero-huge">
+      <span id="daysLeft">43</span><span class="unit" id="daysUnit">Jours</span>
+      <span class="cream" id="heroLine">Restants.</span>
+    </div>
+    <div class="clock" id="clock" aria-label="Compte à rebours fin de saison">
+      <div class="seg"><div class="n mono" id="ckD">00</div><div class="l">Jours</div></div>
+      <div class="sep">:</div>
+      <div class="seg"><div class="n mono" id="ckH">00</div><div class="l">Heures</div></div>
+      <div class="sep">:</div>
+      <div class="seg"><div class="n mono" id="ckM">00</div><div class="l">Min</div></div>
+      <div class="sep">:</div>
+      <div class="seg"><div class="n mono" id="ckS">00</div><div class="l">Sec</div></div>
+    </div>
+    <div class="hero-card">
+      <p>Suivi de progression World Tour. Objectif <b id="heroTarget">Émeraude 4</b> avant la fin de saison. Chaque relevé alimente ta trajectoire.</p>
+      <div class="actions">
+        <button id="heroAdd" type="button">Nouveau relevé <span>&#8599;</span></button>
+        <button id="heroGoal" type="button">Changer l'objectif <span>&#8599;</span></button>
       </div>
     </div>
-    <div class="track"><div class="track-fill" id="trackFill" style="width:0%"></div><svg class="spark track-star" id="trackStar" viewBox="0 0 24 24" fill="none" style="left:0%"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="#ff2247"/></svg></div>
-    <div class="track-meta"><span class="cur" id="pctLabel">0 %</span><span id="remainLabel">1 800 pts restants</span></div>
-    <div class="badges-row">
-      <div class="badge-cell"><div class="badge-glyph" id="nowGlyph">—</div><div><div class="l">Badge actuel</div><div class="v" id="nowRank">Non classé</div></div></div>
-      <div class="badge-cell"><div class="badge-glyph" id="nextGlyph">—</div><div><div class="l" id="nextLabel">Prochain palier</div><div class="v" id="nextInfo">—</div></div></div>
+    <div class="datastrip">
+      <div class="cell"><div class="k">Objectif</div><div class="v" id="dsTarget">Émeraude 4</div></div>
+      <div class="cell"><div class="k">Total requis</div><div class="v" id="dsReq">1 800 PTS</div></div>
+      <div class="cell"><div class="k">État</div><div class="v"><span class="led"></span><span id="dsState">En cours</span></div></div>
     </div>
-  </section>
-  <div class="sec-title"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg><h2>Ce qu'il te reste à faire</h2><div class="rule"></div><svg class="spark end-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg></div>
-  <div class="calc-row">
-    <div class="calc"><div class="lbl"><svg class="spark l-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg>Rythme requis</div><div class="num"><b id="perDay">0</b></div><div class="desc">points par jour à gagner sur les <b id="perDayDays">43</b> jours restants pour décrocher <b id="perDayTarget">Émeraude 4</b>.</div></div>
-    <div class="calc"><div class="lbl"><svg class="spark l-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg>Victoires nécessaires</div><div class="num"><b id="winsNeeded">0</b></div><div class="desc">finales gagnées (<b>25 pts</b> chacune) pour couvrir les <b id="winsRemain">0</b> points manquants. Soit ~<b id="winsPerDay">0</b>/jour.</div></div>
-  </div>
-  <div class="sec-title"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 15h4l3-8 4 12 2-5h5"/></svg><h2>Tes chiffres</h2><div class="rule"></div><svg class="spark end-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg></div>
-  <div class="stats">
-    <div class="stat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 4h16v4H4z"/><path d="M6 8v10a2 2 0 002 2h8a2 2 0 002-2V8"/><path d="M9 12h6"/></svg><div class="v" id="sEntries">0</div><div class="k">Relevés</div></div>
-    <div class="stat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 9V4h12v5a6 6 0 01-12 0z"/><path d="M6 6H3v2a3 3 0 003 3M18 6h3v2a3 3 0 01-3 3M9 20h6M12 15v5"/></svg><div class="v" id="sBest">0</div><div class="k">Meilleur total</div></div>
-    <div class="stat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 20V10M18 20V4M6 20v-4"/></svg><div class="v" id="sLast">—</div><div class="k">Dernier gain</div></div>
-    <div class="stat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13 2L4.5 13H12l-1 9 8.5-11H12l1-9z"/></svg><div class="v" id="sAvg">—</div><div class="k">Gain moyen / jour</div></div>
-  </div>
-  <div class="sec-title"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 3v18h18"/><path d="M6 16l4-5 3 2 5-8"/><circle cx="18" cy="5" r="1.4" fill="currentColor" stroke="none"/></svg><h2>Progression</h2><div class="rule"></div><svg class="spark end-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg></div>
-  <svg id="chart" viewBox="0 0 900 280" preserveAspectRatio="none" style="display:none"></svg>
-  <div class="chart-empty" id="chartEmpty">Aucun relevé pour l'instant.<br>Entre ton total de WT Points pour tracer ta trajectoire.</div>
-  <section class="entry">
-    <div class="field"><label for="inPts">Total WT Points</label><input type="number" id="inPts" inputmode="numeric" placeholder="ex : 1240"></div>
-    <div class="field"><label for="inDate">Date du relevé</label><input type="date" id="inDate"></div>
-    <button class="btn" id="addBtn">Enregistrer</button>
-  </section>
-  <p class="hint">Gains par match en Cashout / Ranked Cashout : éliminé au 1er round = 2 pts · au 2e round = 6 pts · finale perdue = 14 pts · finale gagnée = 25 pts. Les points ne se perdent jamais.</p>
-  <div class="sec-title"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><h2>Historique</h2><div class="rule"></div><svg class="spark end-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg></div>
-  <ul class="hist" id="histList"></ul>
-  <div class="hist-empty" id="histEmpty">Rien enregistré pour l'instant.</div>
-</main>
+  </header>
+
+  <main class="content">
+    <!-- saisie -->
+    <section class="section" id="secEntry">
+      <div class="sec-head"><span class="no">/ 01</span><h2>Nouveau relevé</h2><span class="rule"></span></div>
+      <div class="entry">
+        <div class="field"><label for="inPts">Total WT Points</label><input type="number" id="inPts" inputmode="numeric" placeholder="1240"></div>
+        <div class="field"><label for="inDate">Date</label><input type="date" id="inDate"></div>
+        <div class="addcell"><button class="btn" id="addBtn" type="button">Enregistrer</button></div>
+      </div>
+      <p class="hint">Gains par match — Cashout / Ranked : round 1 = 2 · round 2 = 6 · finale perdue = 14 · finale gagnée = 25. Points jamais perdus.</p>
+    </section>
+
+    <!-- progression -->
+    <section class="section" id="secProg">
+      <div class="sec-head"><span class="no">/ 02</span><h2>Progression</h2><span class="rule"></span></div>
+      <div class="pg-head">
+        <div class="pg-target"><div class="l">Objectif</div><div class="v"><span id="targetRank">Émeraude 4</span> · <span id="targetPts">1 800</span> pts</div></div>
+        <div class="pg-now"><div class="big" id="curPts">0</div><div class="small">Points accumulés</div><button class="edit-link" id="openSettings" type="button">Changer l'objectif</button></div>
+      </div>
+      <div class="track"><div class="track-fill" id="trackFill" style="width:0%"></div></div>
+      <div class="track-meta"><span class="cur" id="pctLabel">0 %</span><span id="remainLabel">1 800 pts restants</span></div>
+      <div class="badges-row">
+        <div class="badge-cell"><div class="badge-glyph" id="nowGlyph">—</div><div><div class="l">Badge actuel</div><div class="v" id="nowRank">Non classé</div></div></div>
+        <div class="badge-cell"><div class="badge-glyph" id="nextGlyph">—</div><div><div class="l" id="nextLabel">Prochain palier</div><div class="v" id="nextInfo">—</div></div></div>
+      </div>
+    </section>
+
+    <!-- calculs -->
+    <section class="section">
+      <div class="sec-head"><span class="no">/ 03</span><h2>Ce qu'il reste</h2><span class="rule"></span></div>
+      <div class="calc-row calc-row-3">
+        <div class="calc"><div class="lbl">Rythme requis</div><div class="num" id="perDay">0</div><div class="desc">points/jour sur les <b id="perDayDays">43</b> jours restants pour décrocher <b id="perDayTarget">Émeraude 4</b>.</div></div>
+        <div class="calc"><div class="lbl">Victoires nécessaires</div><div class="num" id="winsNeeded">0</div><div class="desc">finales gagnées (<b>25 pts</b>) pour couvrir <b id="winsRemain">0</b> pts manquants au total.</div></div>
+        <div class="calc"><div class="lbl">Cadence / jour</div><div class="num"><span id="winsPerDay">0</span><span style="font-size:.32em;font-weight:700;color:var(--ink-dim);letter-spacing:.1em"> VICT.</span></div><div class="desc">victoires par jour, <b>ou</b> <b id="secondPerDay">0</b> secondes places/jour (<b>14 pts</b>), pour tenir le rythme.</div></div>
+      </div>
+    </section>
+
+    <!-- stats -->
+    <section class="section" id="secStats">
+      <div class="sec-head"><span class="no">/ 04</span><h2>Chiffres</h2><span class="rule"></span></div>
+      <div class="stats">
+        <div class="stat"><div class="v" id="sEntries">0</div><div class="k">Relevés</div></div>
+        <div class="stat"><div class="v" id="sBest">0</div><div class="k">Meilleur total</div></div>
+        <div class="stat"><div class="v" id="sLast">—</div><div class="k">Dernier gain</div></div>
+        <div class="stat"><div class="v" id="sAvg">—</div><div class="k">Gain moyen / jour</div></div>
+      </div>
+    </section>
+
+    <!-- courbe -->
+    <section class="section">
+      <div class="sec-head"><span class="no">/ 05</span><h2>Trajectoire</h2><span class="rule"></span></div>
+      <svg id="chart" viewBox="0 0 900 300" preserveAspectRatio="none" style="display:none"></svg>
+      <div class="chart-empty" id="chartEmpty">Aucun relevé — entre ton total pour tracer la courbe</div>
+    </section>
+
+    <!-- historique -->
+    <section class="section" id="secHist">
+      <div class="sec-head"><span class="no">/ 06</span><h2>Historique</h2><span class="rule"></span></div>
+      <ul class="hist" id="histList"></ul>
+      <div class="hist-empty" id="histEmpty">Aucun relevé enregistré</div>
+    </section>
+  </main>
+</div>
+
 <div class="modal-bg" id="modal">
   <div class="modal">
-    <svg class="spark m-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg>
-    <svg class="spark star-lg" viewBox="0 0 24 24" fill="none"><path d="M12 0 L13.4 10.6 L24 12 L13.4 13.4 L12 24 L10.6 13.4 L0 12 L10.6 10.6 Z" fill="#ff2247"/></svg>
-    <h3>Ton objectif de saison</h3>
-    <p class="sub">Le World Tour a des paliers fixes. Choisis ton badge cible et la date de fin de saison ; le total de points requis se règle tout seul.</p>
-    <div class="field"><label for="setRank">Badge visé</label><select id="setRank"></select></div>
-    <div class="field"><label for="setDate">Fin de saison</label><input type="date" id="setDate"></div>
-    <div class="modal-actions"><button class="btn-ghost" id="cancelSettings">Annuler</button><button class="btn" id="saveSettings">Enregistrer</button></div>
+    <h3>Objectif de saison</h3>
+    <p class="sub">Le World Tour a des paliers fixes. Choisis ton badge cible et la date de fin de saison ; le total requis se règle tout seul.</p>
+    <div class="field"><label for="setRank" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);font-weight:700;display:block;margin-bottom:8px">Badge visé</label><select id="setRank"></select></div>
+    <div class="field"><label for="setDate" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);font-weight:700;display:block;margin-bottom:8px">Fin de saison</label><input type="date" id="setDate" style="width:100%;background:transparent;border:none;color:var(--ink);font-size:16px;font-family:inherit;font-weight:700"></div>
+    <div class="modal-actions"><button class="btn-ghost" id="cancelSettings" type="button">Annuler</button><button id="saveSettings" type="button" style="background:var(--ink);color:var(--cream)">Enregistrer</button></div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
 <script>
-(function(){
+document.addEventListener("DOMContentLoaded",function(){
+ try{
   "use strict";
-  const BADGES=[
+  var BADGES=[
     {name:"Bronze 4",abbr:"B4",pts:25},{name:"Bronze 3",abbr:"B3",pts:50},
     {name:"Bronze 2",abbr:"B2",pts:75},{name:"Bronze 1",abbr:"B1",pts:100},
     {name:"Argent 4",abbr:"A4",pts:150},{name:"Argent 3",abbr:"A3",pts:200},
@@ -221,129 +302,146 @@
     {name:"\u00c9meraude 4",abbr:"E4",pts:1800},{name:"\u00c9meraude 3",abbr:"E3",pts:2000},
     {name:"\u00c9meraude 2",abbr:"E2",pts:2200},{name:"\u00c9meraude 1",abbr:"E1",pts:2400}
   ];
-  const WIN_PTS=25;
-  const $=id=>document.getElementById(id);
-  let entries=[], settings={targetRank:"\u00c9meraude 4",endDate:defaultEnd()};
-  function defaultEnd(){const d=new Date();d.setDate(d.getDate()+43);return d.toISOString().slice(0,10)}
+  var WIN_PTS=25;
+  function $(id){return document.getElementById(id)}
+  var entries=[], settings={targetRank:"\u00c9meraude 4",endDate:defaultEnd()};
+  function defaultEnd(){return "2026-10-22"}
+  var SECOND_PTS=14; // finale perdue = 2e place
   function todayIso(){return new Date().toISOString().slice(0,10)}
   function fmt(n){return Math.round(n).toLocaleString("fr-FR")}
-  function badgeByName(n){return BADGES.find(b=>b.name===n)}
-  function targetPts(){const b=badgeByName(settings.targetRank);return b?b.pts:1800}
-  function classify(pts){let current=null,next=BADGES[0];for(let i=0;i<BADGES.length;i++){if(pts>=BADGES[i].pts){current=BADGES[i];next=BADGES[i+1]||null}else{next=BADGES[i];break}}return {current,next}}
-  function daysLeft(){const end=new Date(settings.endDate+"T23:59:59");return Math.ceil((end-new Date())/(864e5))}
-  let toastTimer;
-  function toast(msg,isErr){const t=$("toast");t.textContent=msg;t.className="toast on"+(isErr?" err":"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className="toast"+(isErr?" err":""),2600)}
-  async function api(method,url,body){const opt={method,headers:{"Content-Type":"application/json"}};if(body)opt.body=JSON.stringify(body);const r=await fetch(url,opt);if(!r.ok)throw new Error("HTTP "+r.status);return r.status===204?null:r.json()}
-  BADGES.forEach(b=>{const o=document.createElement("option");o.value=b.name;o.textContent=b.name+" ("+b.pts+" pts)";$("setRank").appendChild(o)});
+  function badgeByName(n){for(var i=0;i<BADGES.length;i++){if(BADGES[i].name===n)return BADGES[i]}return null}
+  function targetPts(){var b=badgeByName(settings.targetRank);return b?b.pts:1800}
+  function classify(pts){var current=null,next=BADGES[0];for(var i=0;i<BADGES.length;i++){if(pts>=BADGES[i].pts){current=BADGES[i];next=BADGES[i+1]||null}else{next=BADGES[i];break}}return {current:current,next:next}}
+  function daysLeft(){var end=new Date(settings.endDate+"T23:59:59");return Math.ceil((end-new Date())/(864e5))}
+  var toastTimer;
+  function toast(msg,isErr){var t=$("toast");t.textContent=msg;t.className="toast on"+(isErr?" err":"");clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.className="toast"+(isErr?" err":"")},2800)}
+  function api(method,url,body){var opt={method:method,headers:{"Content-Type":"application/json"}};if(body)opt.body=JSON.stringify(body);return fetch(url,opt).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.status===204?null:r.json()})}
+
+  for(var i=0;i<BADGES.length;i++){var o=document.createElement("option");o.value=BADGES[i].name;o.textContent=BADGES[i].name+" ("+BADGES[i].pts+" pts)";$("setRank").appendChild(o)}
   $("inDate").value=todayIso();
-  function drawHeroLines(){
-    const svg=$("heroLines");const w=svg.clientWidth||window.innerWidth,h=svg.clientHeight||600;
-    svg.setAttribute("viewBox","0 0 "+w+" "+h);
-    const cy=h/2, cx=w/2;let g="";
-    // ligne horizontale traversante au centre (façon HUD The Finals)
-    g+='<line class="accent" x1="0" y1="'+cy+'" x2="'+(cx-70)+'" y2="'+cy+'"/>';
-    g+='<line class="accent" x1="'+(cx+70)+'" y1="'+cy+'" x2="'+w+'" y2="'+cy+'"/>';
-    // fines verticales décalées
-    g+='<line x1="'+(w*0.18)+'" y1="0" x2="'+(w*0.18)+'" y2="'+h+'"/>';
-    g+='<line x1="'+(w*0.82)+'" y1="0" x2="'+(w*0.82)+'" y2="'+h+'"/>';
-    // liseré cyan diagonal subtil dans un coin
-    g+='<line class="accent-cy" x1="0" y1="'+(h*0.16)+'" x2="'+(w*0.22)+'" y2="0"/>';
-    g+='<line class="accent-cy" x1="'+w+'" y1="'+(h*0.84)+'" x2="'+(w*0.78)+'" y2="'+h+'"/>';
-    svg.innerHTML=g;
-  }
-  function sorted(){return [...entries].sort((a,b)=>a.date.localeCompare(b.date))}
+
+  function sorted(){return entries.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0})}
+
   function render(){
+    var goal=targetPts();
     $("targetRank").textContent=settings.targetRank;$("heroTarget").textContent=settings.targetRank;$("perDayTarget").textContent=settings.targetRank;
-    const goal=targetPts();$("targetPts").textContent=fmt(goal);
-    const es=sorted();const cur=es.length?es[es.length-1].pts:0;
-    const remain=Math.max(0,goal-cur);const pct=goal>0?Math.max(0,Math.min(100,(cur/goal)*100)):0;
-    $("curPts").textContent=fmt(cur);$("trackFill").style.width=pct+"%";$("trackStar").style.left=pct+"%";
+    $("dsTarget").textContent=settings.targetRank;$("dsReq").textContent=fmt(goal)+" PTS";$("targetPts").textContent=fmt(goal);
+    var es=sorted();var cur=es.length?es[es.length-1].pts:0;
+    var remain=Math.max(0,goal-cur);var pct=goal>0?Math.max(0,Math.min(100,(cur/goal)*100)):0;
+    $("curPts").textContent=fmt(cur);$("trackFill").style.width=pct+"%";
     $("pctLabel").textContent=Math.round(pct)+" %";$("remainLabel").textContent=fmt(remain)+" pts restants";
-    const c=classify(cur);
-    if(c.current){$("nowGlyph").textContent=c.current.abbr;$("nowGlyph").style.color="var(--red-soft)";$("nowRank").textContent=c.current.name}
-    else{$("nowGlyph").textContent="—";$("nowGlyph").style.color="var(--ink-faint)";$("nowRank").textContent="Non classé"}
+    var c=classify(cur);
+    if(c.current){$("nowGlyph").textContent=c.current.abbr;$("nowRank").textContent=c.current.name}
+    else{$("nowGlyph").textContent="—";$("nowRank").textContent="Non classé"}
     if(c.next){$("nextGlyph").textContent=c.next.abbr;$("nextLabel").textContent="Prochain palier";$("nextInfo").textContent=c.next.name+" · "+fmt(c.next.pts-cur)+" pts"}
-    else{$("nextGlyph").textContent="\u2726";$("nextLabel").textContent="Statut";$("nextInfo").textContent="Palier maximum atteint"}
-    const d=daysLeft();
-    if(d<0){$("daysLeft").textContent="0";$("daysUnit").textContent="saison terminée"}
-    else{$("daysLeft").textContent=d;$("daysUnit").textContent=d<=1?"jour restant":"jours restants"}
+    else{$("nextGlyph").textContent="\u2726";$("nextLabel").textContent="Statut";$("nextInfo").textContent="Palier max atteint"}
+    var d=daysLeft();
+    if(d<0){$("daysLeft").textContent="0";$("daysUnit").textContent="Jours";$("heroLine").textContent="Terminé.";$("dsState").textContent="Terminé"}
+    else{$("daysLeft").textContent=d;$("daysUnit").textContent=d<=1?"Jour":"Jours";$("heroLine").textContent="Restants.";$("dsState").textContent=remain<=0?"Atteint":"En cours"}
     $("perDayDays").textContent=Math.max(0,d);
-    const perDay=(d>0&&remain>0)?Math.ceil(remain/d):0;$("perDay").textContent=remain<=0?"0":fmt(perDay);
-    const wins=remain>0?Math.ceil(remain/WIN_PTS):0;$("winsNeeded").textContent=fmt(wins);$("winsRemain").textContent=fmt(remain);
-    const winsPerDay=(d>0&&wins>0)?(wins/d):0;$("winsPerDay").textContent=winsPerDay>0?winsPerDay.toFixed(1):"0";
+    var perDay=(d>0&&remain>0)?Math.ceil(remain/d):0;$("perDay").textContent=remain<=0?"0":fmt(perDay);
+    var wins=remain>0?Math.ceil(remain/WIN_PTS):0;$("winsNeeded").textContent=fmt(wins);$("winsRemain").textContent=fmt(remain);
+    var winsPerDay=(d>0&&wins>0)?(wins/d):0;$("winsPerDay").textContent=winsPerDay>0?winsPerDay.toFixed(1):"0";
+    var secondPerDay=(d>0&&remain>0)?(remain/SECOND_PTS/d):0;$("secondPerDay").textContent=secondPerDay>0?secondPerDay.toFixed(1):"0";
     $("sEntries").textContent=es.length;
-    const best=es.reduce((m,e)=>Math.max(m,e.pts),0);$("sBest").textContent=es.length?fmt(best):"0";
-    const sLast=$("sLast");
-    if(es.length>=2){const dd=es[es.length-1].pts-es[es.length-2].pts;sLast.textContent=(dd>=0?"+":"")+fmt(dd);sLast.className="v "+(dd>=0?"pos":"")}
-    else{sLast.textContent="—";sLast.className="v"}
-    const sAvg=$("sAvg");
-    if(es.length>=2){const first=es[0],last=es[es.length-1];const span=Math.max(1,Math.round((new Date(last.date)-new Date(first.date))/864e5));const avg=(last.pts-first.pts)/span;sAvg.textContent=(avg>=0?"+":"")+fmt(avg)}
-    else{sAvg.textContent="—"}
+    var best=0;for(var i=0;i<es.length;i++){if(es[i].pts>best)best=es[i].pts}$("sBest").textContent=es.length?fmt(best):"0";
+    var sLast=$("sLast");
+    if(es.length>=2){var dd=es[es.length-1].pts-es[es.length-2].pts;sLast.textContent=(dd>=0?"+":"")+fmt(dd)}else{sLast.textContent="—"}
+    var sAvg=$("sAvg");
+    if(es.length>=2){var first=es[0],last=es[es.length-1];var span=Math.max(1,Math.round((new Date(last.date)-new Date(first.date))/864e5));var avg=(last.pts-first.pts)/span;sAvg.textContent=(avg>=0?"+":"")+fmt(avg)}else{sAvg.textContent="—"}
     drawChart(es,goal);drawHist(es);
   }
+
   function drawChart(es,goal){
-    const chart=$("chart"),empty=$("chartEmpty");
+    var chart=$("chart"),empty=$("chartEmpty");
     if(es.length<1){chart.style.display="none";empty.style.display="grid";return}
     chart.style.display="block";empty.style.display="none";
-    const W=900,H=280,pad={t:20,r:16,b:28,l:56};
-    const iw=W-pad.l-pad.r,ih=H-pad.t-pad.b;
-    const vals=es.map(e=>e.pts).concat([goal]);
-    let min=Math.min(...vals,0),max=Math.max(...vals);if(max===min)max=min+1;
-    const padV=(max-min)*0.1;max+=padV;min=Math.max(0,min-padV);
-    const n=es.length;const x=i=>pad.l+(n===1?iw/2:(i/(n-1))*iw);const y=v=>pad.t+ih-((v-min)/(max-min))*ih;
-    let g="";
-    for(let k=0;k<=4;k++){const gy=pad.t+(k/4)*ih;const val=max-(k/4)*(max-min);
-      g+='<line x1="'+pad.l+'" y1="'+gy+'" x2="'+(W-pad.r)+'" y2="'+gy+'" stroke="rgba(255,255,255,.06)" stroke-width="1"/>';
-      g+='<text x="'+(pad.l-10)+'" y="'+(gy+4)+'" fill="#565d6a" font-size="11" text-anchor="end" font-family="monospace">'+fmt(val)+'</text>'}
-    if(goal<=max&&goal>=min){const ty=y(goal);
-      g+='<line x1="'+pad.l+'" y1="'+ty+'" x2="'+(W-pad.r)+'" y2="'+ty+'" stroke="#ff2247" stroke-width="1" stroke-dasharray="5 5" opacity=".6"/>';
-      g+='<text x="'+(W-pad.r)+'" y="'+(ty-8)+'" fill="#ff4d68" font-size="11" text-anchor="end" font-family="monospace" letter-spacing="1">OBJECTIF</text>'}
-    const pts=es.map((e,i)=>[x(i),y(e.pts)]);
-    const line=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
-    if(n>=2){const area=line+" L "+x(n-1)+" "+(pad.t+ih)+" L "+x(0)+" "+(pad.t+ih)+" Z";
-      g+='<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff2247" stop-opacity=".2"/><stop offset="1" stop-color="#ff2247" stop-opacity="0"/></linearGradient></defs>';
-      g+='<path d="'+area+'" fill="url(#ag)"/>';
-      g+='<path d="'+line+'" fill="none" stroke="#ff4d68" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'}
-    pts.forEach(p=>{g+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="#08090c" stroke="#ff4d68" stroke-width="2"/>'});
+    var W=900,H=300,padT=22,padR=16,padB=30,padL=58;
+    var iw=W-padL-padR,ih=H-padT-padB;
+    var vals=[];for(var i=0;i<es.length;i++)vals.push(es[i].pts);vals.push(goal);
+    var min=Math.min.apply(null,vals.concat([0])),max=Math.max.apply(null,vals);if(max===min)max=min+1;
+    var padV=(max-min)*0.1;max+=padV;min=Math.max(0,min-padV);
+    var n=es.length;
+    function x(i){return padL+(n===1?iw/2:(i/(n-1))*iw)}
+    function y(v){return padT+ih-((v-min)/(max-min))*ih}
+    var g="";
+    for(var k=0;k<=4;k++){var gy=padT+(k/4)*ih;var val=max-(k/4)*(max-min);
+      g+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="rgba(0,0,0,.16)" stroke-width="1"/>';
+      g+='<text x="'+(padL-10)+'" y="'+(gy+4)+'" fill="rgba(17,16,19,.55)" font-size="11" text-anchor="end" font-family="monospace" font-weight="bold">'+fmt(val)+'</text>'}
+    if(goal<=max&&goal>=min){var ty=y(goal);
+      g+='<line x1="'+padL+'" y1="'+ty+'" x2="'+(W-padR)+'" y2="'+ty+'" stroke="#111013" stroke-width="1.5" stroke-dasharray="6 5"/>';
+      g+='<text x="'+(W-padR)+'" y="'+(ty-8)+'" fill="#111013" font-size="11" text-anchor="end" font-family="monospace" font-weight="bold" letter-spacing="1">OBJECTIF</text>'}
+    var pts=[];for(var i=0;i<es.length;i++)pts.push([x(i),y(es[i].pts)]);
+    var line="";for(var i=0;i<pts.length;i++)line+=(i?"L":"M")+pts[i][0].toFixed(1)+" "+pts[i][1].toFixed(1)+" ";
+    if(n>=2){var area=line+"L "+x(n-1)+" "+(padT+ih)+" L "+x(0)+" "+(padT+ih)+" Z";
+      g+='<path d="'+area+'" fill="rgba(17,16,19,.12)"/>';
+      g+='<path d="'+line+'" fill="none" stroke="#111013" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'}
+    for(var i=0;i<pts.length;i++){g+='<rect x="'+(pts[i][0]-4)+'" y="'+(pts[i][1]-4)+'" width="8" height="8" fill="#f5402b" stroke="#111013" stroke-width="2"/>'}
     chart.innerHTML=g;
   }
+
   function drawHist(es){
-    const list=$("histList"),empty=$("histEmpty");const rev=[...es].reverse();
-    if(!rev.length){list.innerHTML="";empty.style.display="block";return}
-    empty.style.display="none";
-    list.innerHTML=rev.map((e,ri)=>{
-      const idx=es.length-1-ri;const prev=idx>0?es[idx-1].pts:null;const d=prev===null?null:e.pts-prev;
-      const dtxt=d===null?'<span class="delta"></span>':'<span class="delta '+(d>=0?'pos':'neg')+'">'+(d>=0?'+':'')+fmt(d)+'</span>';
-      const c=classify(e.pts);const btxt=c.current?c.current.name:"Non classé";
-      const dateFr=new Date(e.date+"T00:00:00").toLocaleDateString("fr-FR",{day:"2-digit",month:"short"});
-      const num=String(es.length-ri).padStart(2,"0");
-      return '<li><span class="idx mono">'+num+'</span><span class="date">'+dateFr+'</span><span class="pts mono">'+fmt(e.pts)+'</span><span class="badge-mini">'+btxt+'</span>'+dtxt+'<button class="del" data-id="'+e.id+'" title="Supprimer">\u00d7</button></li>';
-    }).join("");
-    list.querySelectorAll(".del").forEach(b=>{b.onclick=async()=>{
-      try{await api("DELETE","/api/entries/"+b.dataset.id);entries=entries.filter(x=>String(x.id)!==String(b.dataset.id));render();toast("Relevé supprimé")}
-      catch(e){toast("Erreur de suppression",true)}}});
+    var list=$("histList"),empty=$("histEmpty");
+    if(!es.length){list.innerHTML="";empty.style.display="block";list.style.display="none";return}
+    empty.style.display="none";list.style.display="block";
+    var rev=es.slice().reverse(),html="";
+    for(var ri=0;ri<rev.length;ri++){
+      var e=rev[ri];var idx=es.length-1-ri;var prev=idx>0?es[idx-1].pts:null;var d=prev===null?null:e.pts-prev;
+      var dtxt=d===null?'<span class="delta"></span>':'<span class="delta '+(d>=0?'pos':'neg')+'">'+(d>=0?'+':'')+fmt(d)+'</span>';
+      var c=classify(e.pts);var btxt=c.current?c.current.name:"Non classé";
+      var dateFr=new Date(e.date+"T00:00:00").toLocaleDateString("fr-FR",{day:"2-digit",month:"short"});
+      var num=String(es.length-ri);if(num.length<2)num="0"+num;
+      html+='<li><span class="idx mono">'+num+'</span><span class="date">'+dateFr+'</span><span class="pts">'+fmt(e.pts)+'</span><span class="badge-mini">'+btxt+'</span>'+dtxt+'<button class="del" data-id="'+e.id+'" type="button">\u00d7</button></li>';
+    }
+    list.innerHTML=html;
+    var dels=list.querySelectorAll(".del");
+    for(var i=0;i<dels.length;i++){dels[i].addEventListener("click",function(){
+      var id=this.getAttribute("data-id");
+      api("DELETE","/api/entries/"+id).then(function(){entries=entries.filter(function(x){return String(x.id)!==String(id)});render();toast("Relevé supprimé")}).catch(function(){toast("Erreur de suppression",true)});
+    })}
   }
-  $("addBtn").onclick=async()=>{
-    const pts=parseInt($("inPts").value,10);const date=$("inDate").value||todayIso();
-    if(isNaN(pts)){$("inPts").focus();return}
+
+  function addEntry(){
+    var pts=parseInt($("inPts").value,10);var date=$("inDate").value||todayIso();
+    if(isNaN(pts)){$("inPts").focus();toast("Entre un nombre de points",true);return}
     $("addBtn").disabled=true;
-    try{const saved=await api("POST","/api/entries",{pts,date});entries=entries.filter(e=>e.date!==saved.date);entries.push(saved);$("inPts").value="";render();toast("Relevé enregistré")}
-    catch(e){toast("Erreur d'enregistrement",true)}finally{$("addBtn").disabled=false}
-  };
-  $("inPts").addEventListener("keydown",e=>{if(e.key==="Enter")$("addBtn").click()});
-  $("openSettings").onclick=()=>{$("setRank").value=settings.targetRank;$("setDate").value=settings.endDate;$("modal").classList.add("on")};
-  $("cancelSettings").onclick=()=>$("modal").classList.remove("on");
-  $("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("on")};
-  $("saveSettings").onclick=async()=>{
-    const targetRank=$("setRank").value, endDate=$("setDate").value||settings.endDate;
-    try{const s=await api("PUT","/api/settings",{targetRank,endDate});settings=s;render();$("modal").classList.remove("on");toast("Objectif mis à jour")}
-    catch(e){toast("Erreur d'enregistrement",true)}
-  };
-  window.addEventListener("resize",drawHeroLines);
-  async function boot(){
-    drawHeroLines();
-    try{const [s,e]=await Promise.all([api("GET","/api/settings"),api("GET","/api/entries")]);settings=s;entries=e;render()}
-    catch(err){$("chartEmpty").textContent="Impossible de contacter le serveur.";toast("Connexion au serveur impossible",true);render()}
+    api("POST","/api/entries",{pts:pts,date:date}).then(function(saved){
+      entries=entries.filter(function(e){return e.date!==saved.date});entries.push(saved);
+      $("inPts").value="";render();toast("Relevé enregistré");
+    }).catch(function(){toast("Erreur d'enregistrement",true)}).then(function(){$("addBtn").disabled=false});
   }
-  boot();
-})();
+
+  function openModal(){$("setRank").value=settings.targetRank;$("setDate").value=settings.endDate;$("modal").classList.add("on")}
+  $("addBtn").addEventListener("click",addEntry);
+  $("inPts").addEventListener("keydown",function(e){if(e.key==="Enter")addEntry()});
+  $("openSettings").addEventListener("click",openModal);
+  $("heroGoal").addEventListener("click",openModal);
+  $("heroAdd").addEventListener("click",function(){document.getElementById("secEntry").scrollIntoView({behavior:"smooth"});$("inPts").focus()});
+  $("cancelSettings").addEventListener("click",function(){$("modal").classList.remove("on")});
+  $("modal").addEventListener("click",function(e){if(e.target===$("modal"))$("modal").classList.remove("on")});
+  $("saveSettings").addEventListener("click",function(){
+    var targetRank=$("setRank").value,endDate=$("setDate").value||settings.endDate;
+    api("PUT","/api/settings",{targetRank:targetRank,endDate:endDate}).then(function(s){settings=s;render();$("modal").classList.remove("on");toast("Objectif mis à jour")}).catch(function(){toast("Erreur d'enregistrement",true)});
+  });
+
+  function pad2(n){n=String(n);return n.length<2?"0"+n:n}
+  function tickClock(){
+    var end=new Date(settings.endDate+"T23:59:59");
+    var diff=end-new Date();
+    if(diff<0)diff=0;
+    var s=Math.floor(diff/1000);
+    var days=Math.floor(s/86400);s-=days*86400;
+    var h=Math.floor(s/3600);s-=h*3600;
+    var m=Math.floor(s/60);s-=m*60;
+    $("ckD").textContent=pad2(days);$("ckH").textContent=pad2(h);$("ckM").textContent=pad2(m);$("ckS").textContent=pad2(s);
+  }
+
+  render();
+  tickClock();setInterval(tickClock,1000);
+  Promise.all([api("GET","/api/settings"),api("GET","/api/entries")]).then(function(res){settings=res[0];entries=res[1];render();tickClock()}).catch(function(){toast("Connexion au serveur impossible",true);$("chartEmpty").textContent="Impossible de charger les données"});
+
+ }catch(err){var f=document.getElementById("fatal");if(f){f.style.display="block";f.textContent="Erreur au chargement : "+(err&&err.message?err.message:err)}}
+});
+</script>
+</body>
+</html>
