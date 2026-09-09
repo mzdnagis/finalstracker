@@ -3,170 +3,204 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>World Tour Tracker — The Finals</title>
+<title>finalstracker — Suivi World Tour</title>
 <style>
   :root{
-    --bg:#0c0c0e;--card:#161618;--card-2:#1c1c1f;--line:#28282c;
-    --ink:#f2f2f4;--ink-dim:#8a8a92;--ink-faint:#5a5a62;
-    --red:#e6004c;--red-glow:#ff1a66;--magenta:#ff2d78;--amber:#ffb020;--grid:#242428;
+    --void:#08090c;--void-2:#0e1015;--panel:rgba(255,255,255,.015);
+    --line:rgba(255,255,255,.12);--line-soft:rgba(255,255,255,.055);
+    --ink:#f4f5f8;--ink-dim:#8c93a0;--ink-faint:#565d6a;
+    --red:#ff2247;--red-soft:#ff4d68;--red-deep:#c00f30;
+    --cyan:#28e0e0;--cyan-soft:#5cf0f0;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
-  body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;min-height:100vh;letter-spacing:.01em;padding:clamp(16px,3vw,40px)}
-  .wrap{max-width:1000px;margin:0 auto}
-  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}
-  .greet{display:flex;align-items:center;gap:14px}
-  .avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--magenta));display:grid;place-items:center;font-weight:800;font-size:18px;color:#fff;flex-shrink:0}
-  .greet .g-lbl{font-size:12px;color:var(--ink-dim)}
-  .greet .g-name{font-size:20px;font-weight:800;margin-top:1px}
-  .bell{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink-dim);font-size:18px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px}
-  .card.wide{grid-column:1/-1}
-  .card-title{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-  .icon-chip{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;background:linear-gradient(135deg,rgba(230,0,76,.25),rgba(255,45,120,.12));border:1px solid rgba(255,45,120,.3);font-size:17px}
-  .card-title h2{font-size:17px;font-weight:800}
-  .card-sub{font-size:12px;color:var(--ink-dim);margin-bottom:18px}
-  .hero .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:20px}
-  .hero .big{display:flex;align-items:baseline;gap:10px}
-  .hero .big .n{font-size:clamp(38px,7vw,60px);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-  .hero .big .u{font-size:15px;color:var(--ink-dim);font-weight:600}
-  .hero .goal-side{text-align:right}
-  .hero .goal-side .l{font-size:11px;color:var(--ink-dim);letter-spacing:.14em;text-transform:uppercase}
-  .hero .goal-side .v{font-size:22px;font-weight:800;margin-top:3px}
-  .hero .goal-side .v b{color:var(--magenta)}
-  .edit-btn{background:transparent;border:1px solid var(--line);color:var(--ink-dim);padding:7px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-family:inherit;transition:.15s;margin-top:8px}
-  .edit-btn:hover{border-color:var(--magenta);color:var(--magenta)}
-  .bar-track{height:12px;background:var(--card-2);border-radius:999px;overflow:hidden;position:relative}
-  .bar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--red),var(--magenta));border-radius:999px;transition:width .6s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 18px rgba(255,45,120,.5);min-width:2px;position:relative}
-  .bar-knob{position:absolute;right:0;top:50%;transform:translate(50%,-50%);width:24px;height:24px;border-radius:50%;background:var(--red);border:3px solid var(--bg);display:grid;place-items:center;font-size:11px;box-shadow:0 0 14px rgba(230,0,76,.7)}
-  .bar-meta{display:flex;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
-  .bar-meta b{color:var(--ink)} .bar-meta .pct{color:var(--magenta);font-weight:700}
-  .current{display:flex;align-items:center;gap:14px;margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
-  .now-badge{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-weight:800;font-size:14px;background:var(--card-2);border:1px solid var(--line)}
-  .now-txt{flex:1;min-width:0}
-  .now-txt .l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim)}
-  .now-txt .v{font-size:16px;font-weight:800;margin-top:2px}
-  .next-txt{text-align:right;font-size:12px;color:var(--ink-dim)}
-  .next-txt b{color:var(--amber);display:block;font-size:16px;font-weight:800;margin-top:2px}
-  .count-big{font-size:clamp(40px,8vw,64px);font-weight:800;line-height:1;color:var(--red-glow);text-shadow:0 0 26px rgba(255,26,102,.45);font-variant-numeric:tabular-nums}
-  .count-lbl{font-size:12px;color:var(--ink-dim);margin-top:8px;letter-spacing:.1em}
-  .pills{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .pill{background:var(--card-2);border-radius:16px;padding:14px 16px}
-  .pill .v{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
-  .pill .v.pos{color:var(--magenta)} .pill .v.neg{color:var(--red)}
-  .pill .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);margin-top:4px}
-  #chart{width:100%;height:230px;display:block}
-  .empty-chart{height:230px;display:grid;place-items:center;color:var(--ink-faint);font-size:13px;text-align:center;line-height:1.6}
-  .entry-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-  .field{flex:1;min-width:120px}
-  .field label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:7px}
-  .field input{width:100%;background:var(--card-2);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:14px;font-size:15px;font-family:inherit;transition:.15s}
-  .field input:focus{outline:none;border-color:var(--magenta);box-shadow:0 0 0 3px rgba(255,45,120,.15)}
-  .btn-primary{background:linear-gradient(135deg,var(--red),var(--magenta));color:#fff;border:none;padding:13px 24px;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap;box-shadow:0 4px 16px rgba(230,0,76,.3)}
-  .btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
-  .btn-primary:active{transform:translateY(0)}
-  .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
-  .hint{font-size:12px;color:var(--ink-faint);margin-top:14px;line-height:1.5}
-  .hist{list-style:none;display:flex;flex-direction:column;gap:4px}
-  .hist li{display:grid;grid-template-columns:1fr auto auto auto auto;gap:14px;align-items:center;padding:13px 16px;border-radius:14px;font-size:14px;transition:.12s;background:var(--card-2)}
-  .hist .date{color:var(--ink-dim);font-size:12px}
-  .hist .rs{font-weight:800;font-variant-numeric:tabular-nums}
-  .hist .badge-mini{font-size:11px;color:var(--ink-dim);text-align:right}
-  .hist .delta{font-variant-numeric:tabular-nums;font-size:13px;text-align:right;min-width:52px;font-weight:700}
-  .hist .delta.pos{color:var(--magenta)} .hist .delta.neg{color:var(--red)}
-  .hist .del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:15px;padding:2px 6px;border-radius:6px;line-height:1}
-  .hist .del:hover{color:var(--red);background:rgba(230,0,76,.12)}
-  .hist-empty{color:var(--ink-faint);font-size:13px;padding:20px;text-align:center}
-  .modal-bg{position:fixed;inset:0;background:rgba(5,5,7,.82);backdrop-filter:blur(5px);display:none;place-items:center;padding:20px;z-index:50}
+  body{background:var(--void);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden}
+  .mono{font-family:"SF Mono","Consolas",monospace}
+  /* étoile 4 branches réutilisable */
+  .spark{display:inline-block;flex-shrink:0}
+  /* HERO */
+  .hero{position:relative;min-height:78vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:64px 24px 44px;overflow:hidden;isolation:isolate}
+  /* liserés fins : une ligne horizontale traversante + cadre d'angle */
+  .hero-lines{position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .hero-lines line{stroke:var(--line-soft);stroke-width:1}
+  .hero-lines .accent{stroke:var(--red);stroke-width:1;opacity:.5}
+  .hero-lines .accent-cy{stroke:var(--cyan);stroke-width:1;opacity:.32}
+  .hbar{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--line) 20%,var(--line) 80%,transparent)}
+  .star-lg{width:22px;height:22px;margin:0 auto 34px;filter:drop-shadow(0 0 10px rgba(255,34,71,.7))}
+  .kicker{font-size:11px;letter-spacing:.46em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:30px;font-weight:500;padding-left:.46em;display:flex;align-items:center;gap:14px;justify-content:center}
+  .kicker .k-spark{width:9px;height:9px;opacity:.8}
+  .count-wrap{display:flex;align-items:baseline;justify-content:center;gap:18px;margin-bottom:20px}
+  .count-num{font-size:clamp(76px,17vw,164px);font-weight:200;line-height:.86;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+  .count-unit{font-size:clamp(14px,3vw,19px);color:var(--ink-dim);font-weight:400;letter-spacing:.14em;text-transform:uppercase}
+  .hero-sub{font-size:15px;color:var(--ink-dim);max-width:430px;line-height:1.7;margin:0 auto;font-weight:300}
+  .hero-sub b{color:var(--red-soft);font-weight:400}
+  .brandline{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:11px;font-size:15px;font-weight:500;letter-spacing:.34em;text-transform:uppercase;color:var(--ink)}
+  .brandline .b-spark{width:13px;height:13px}
+  .brandline .tag{color:var(--red)}
+  /* CONTENU */
+  .content{max-width:1080px;margin:0 auto;padding:0 24px 90px}
+  .progress-block{padding:56px 0;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);position:relative}
+  /* petite étoile d'angle décorative */
+  .corner-spark{position:absolute;width:11px;height:11px;opacity:.5}
+  .progress-block .corner-spark{top:-6px;right:0;color:var(--cyan)}
+  .pg-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:26px}
+  .pg-target{display:flex;align-items:center;gap:16px}
+  .pg-target .ic{width:30px;height:30px;color:var(--red);flex-shrink:0}
+  .pg-target .l{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-dim);font-weight:500}
+  .pg-target .v{font-size:24px;font-weight:300;margin-top:4px;letter-spacing:.01em}
+  .pg-target .v b{color:var(--red-soft);font-weight:400}
+  .pg-now{text-align:right}
+  .pg-now .big{font-size:clamp(30px,6vw,44px);font-weight:200;font-variant-numeric:tabular-nums;line-height:1}
+  .pg-now .small{font-size:13px;color:var(--ink-dim);margin-top:6px}
+  .edit-link{background:none;border:none;color:var(--ink-dim);cursor:pointer;font-family:inherit;font-size:12px;letter-spacing:.16em;text-transform:uppercase;padding:6px 0;border-bottom:1px solid var(--line);transition:.2s;margin-top:10px}
+  .edit-link:hover{color:var(--red-soft);border-color:var(--red)}
+  .track{height:2px;background:var(--line);position:relative;margin:8px 0}
+  .track-fill{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,var(--red-deep),var(--red));transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .track-star{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;transition:left .8s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 7px rgba(255,34,71,.9))}
+  .track-meta{display:flex;justify-content:space-between;margin-top:16px;font-size:12px;color:var(--ink-faint);letter-spacing:.04em}
+  .track-meta .cur{color:var(--red-soft)}
+  .badges-row{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .badge-cell{padding:30px 0;display:flex;align-items:center;gap:16px}
+  .badge-cell:first-child{border-right:1px solid var(--line-soft);padding-right:30px}
+  .badge-cell:last-child{padding-left:30px}
+  .badge-glyph{width:44px;height:44px;border:1px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:500;letter-spacing:.05em;flex-shrink:0;color:var(--red-soft);position:relative}
+  .badge-cell .l{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);font-weight:500}
+  .badge-cell .v{font-size:18px;font-weight:300;margin-top:3px}
+  .sec-title{display:flex;align-items:center;gap:14px;margin:70px 0 30px}
+  .sec-title .ic{width:20px;height:20px;color:var(--red);flex-shrink:0}
+  .sec-title h2{font-size:13px;letter-spacing:.3em;text-transform:uppercase;font-weight:500;color:var(--ink)}
+  .sec-title .rule{flex:1;height:1px;background:var(--line-soft)}
+  .sec-title .end-spark{width:10px;height:10px;color:var(--cyan);opacity:.6}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+  .stat{background:var(--void);padding:26px 22px}
+  .stat .ic{width:20px;height:20px;color:var(--red);margin-bottom:16px}
+  .stat .v{font-size:30px;font-weight:200;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.01em}
+  .stat .v.pos{color:var(--red-soft)}
+  .stat .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);margin-top:12px;font-weight:500;line-height:1.4}
+  .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:1px}
+  .calc{background:var(--void);padding:34px 26px;position:relative}
+  .calc .lbl{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);font-weight:500;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+  .calc .lbl .l-spark{width:9px;height:9px;color:var(--red);opacity:.8}
+  .calc .num{font-size:clamp(38px,7vw,56px);font-weight:200;line-height:.95;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .calc .num b{color:var(--red-soft);font-weight:200}
+  .calc .desc{font-size:13px;color:var(--ink-dim);margin-top:14px;line-height:1.6;font-weight:300}
+  .calc .desc b{color:var(--ink);font-weight:400}
+  #chart{width:100%;height:280px;display:block;margin-top:8px}
+  .chart-empty{height:280px;display:grid;place-items:center;color:var(--ink-faint);font-size:13px;text-align:center;line-height:1.7;font-weight:300}
+  .entry{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;padding:34px 0;border-top:1px solid var(--line-soft)}
+  .field{flex:1;min-width:150px}
+  .field label{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;font-weight:500}
+  .field input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--line);color:var(--ink);padding:10px 0;font-size:17px;font-family:inherit;font-weight:300;transition:.2s}
+  .field input::placeholder{color:var(--ink-faint)}
+  .field input:focus{outline:none;border-color:var(--red)}
+  .btn{background:var(--red);color:#fff;border:none;padding:14px 34px;font-weight:500;font-size:13px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:.2s}
+  .btn:hover{background:var(--red-soft)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .hint{font-size:12px;color:var(--ink-faint);margin-top:20px;line-height:1.7;font-weight:300}
+  .hist{list-style:none}
+  .hist li{display:grid;grid-template-columns:auto 1fr auto auto auto auto;gap:20px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line-soft);font-weight:300}
+  .hist .idx{font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums;width:24px}
+  .hist .date{font-size:13px;color:var(--ink-dim)}
+  .hist .pts{font-size:17px;font-variant-numeric:tabular-nums;text-align:right}
+  .hist .badge-mini{font-size:12px;color:var(--ink-dim);text-align:right;letter-spacing:.02em}
+  .hist .delta{font-size:13px;font-variant-numeric:tabular-nums;text-align:right;min-width:56px}
+  .hist .delta.pos{color:var(--red-soft)} .hist .delta.neg{color:var(--ink-faint)}
+  .hist .del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:15px;line-height:1;padding:4px;transition:.2s}
+  .hist .del:hover{color:var(--red)}
+  .hist-empty{color:var(--ink-faint);font-size:13px;padding:30px 0;font-weight:300}
+  .modal-bg{position:fixed;inset:0;background:rgba(5,6,9,.9);backdrop-filter:blur(6px);display:none;place-items:center;padding:24px;z-index:50}
   .modal-bg.on{display:grid}
-  .modal{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:30px;max-width:460px;width:100%}
-  .modal h3{font-size:19px;margin-bottom:4px;font-weight:800}
-  .modal p.sub{font-size:13px;color:var(--ink-dim);margin-bottom:24px;line-height:1.5}
-  .modal .field{margin-bottom:16px}
-  .modal-actions{display:flex;gap:10px;margin-top:26px}
+  .modal{background:var(--void-2);border:1px solid var(--line);max-width:460px;width:100%;padding:40px;position:relative}
+  .modal .m-spark{position:absolute;top:18px;right:18px;width:12px;height:12px;color:var(--cyan);opacity:.6}
+  .modal .star-lg{width:20px;height:20px;margin:0 0 20px}
+  .modal h3{font-size:20px;font-weight:300;margin-bottom:8px;letter-spacing:.02em}
+  .modal p.sub{font-size:13px;color:var(--ink-dim);margin-bottom:28px;line-height:1.6;font-weight:300}
+  .modal .field{margin-bottom:24px}
+  .modal select{width:100%;background:transparent;border:none;border-bottom:1px solid var(--line);color:var(--ink);padding:10px 0;font-size:16px;font-family:inherit;font-weight:300}
+  .modal select:focus{outline:none;border-color:var(--red)}
+  .modal select option{background:var(--void-2)}
+  .modal-actions{display:flex;gap:16px;margin-top:34px}
   .modal-actions button{flex:1}
-  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink-dim);padding:13px;border-radius:14px;cursor:pointer;font-family:inherit;font-size:14px}
+  .btn-ghost{background:none;border:1px solid var(--line);color:var(--ink-dim);padding:14px;cursor:pointer;font-family:inherit;font-size:13px;letter-spacing:.1em;text-transform:uppercase;transition:.2s}
   .btn-ghost:hover{border-color:var(--ink-dim);color:var(--ink)}
-  select{width:100%;background:var(--card-2);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:14px;font-size:15px;font-family:inherit}
-  select:focus{outline:none;border-color:var(--magenta)}
-  .foot{text-align:center;color:var(--ink-faint);font-size:11px;margin-top:30px;letter-spacing:.08em}
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--line);color:var(--ink);padding:12px 20px;border-radius:14px;font-size:13px;opacity:0;transition:.25s;z-index:60;pointer-events:none}
+  .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--void-2);border:1px solid var(--line);color:var(--ink);padding:14px 26px;font-size:13px;font-weight:300;letter-spacing:.04em;opacity:0;transition:.3s;z-index:60;pointer-events:none}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-  .toast.err{border-color:var(--red);color:var(--red-glow)}
-  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .toast.err{border-color:var(--red);color:var(--red-soft)}
+  @media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.badges-row{grid-template-columns:1fr}.badge-cell:first-child{border-right:none;border-bottom:1px solid var(--line-soft);padding-right:0}.badge-cell:last-child{padding-left:0}.calc-row{grid-template-columns:1fr}.pg-head{flex-direction:column;align-items:flex-start}.pg-now{text-align:left}}
   @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="greet"><div class="avatar">W</div><div><div class="g-lbl">Content de te revoir</div><div class="g-name">World Tour</div></div></div>
-    <div class="bell">◔</div>
+<header class="hero">
+  <svg class="hero-lines" id="heroLines" preserveAspectRatio="none"></svg>
+  <svg class="spark star-lg" viewBox="0 0 24 24" fill="none"><path d="M12 0 L13.4 10.6 L24 12 L13.4 13.4 L12 24 L10.6 13.4 L0 12 L10.6 10.6 Z" fill="#ff2247"/></svg>
+  <div class="kicker">
+    <svg class="spark k-spark" viewBox="0 0 24 24"><path d="M12 0 L13.4 10.6 L24 12 L13.4 13.4 L12 24 L10.6 13.4 L0 12 L10.6 10.6 Z" fill="#28e0e0"/></svg>
+    World Tour · Saison en cours
+    <svg class="spark k-spark" viewBox="0 0 24 24"><path d="M12 0 L13.4 10.6 L24 12 L13.4 13.4 L12 24 L10.6 13.4 L0 12 L10.6 10.6 Z" fill="#28e0e0"/></svg>
   </div>
-  <div class="grid">
-    <section class="card wide hero">
-      <div class="card-title"><div class="icon-chip">🔥</div><div><h2>Objectif de saison</h2></div></div>
-      <div class="card-sub">Ta progression vers le badge visé.</div>
-      <div class="hero-top">
-        <div class="big"><span class="n" id="curPts">0</span><span class="u">/ <span id="targetPts">1 800</span> pts</span></div>
-        <div class="goal-side"><div class="l">Cible</div><div class="v"><b id="targetRank">Émeraude 4</b></div><button class="edit-btn" id="openSettings">Modifier</button></div>
-      </div>
-      <div class="bar-track"><div class="bar-fill" id="barFill" style="width:0%"><div class="bar-knob">🔥</div></div></div>
-      <div class="bar-meta"><span class="pct" id="pctLabel">0%</span><span>Reste <b id="remainPts">0</b> pts</span></div>
-      <div class="current">
-        <div class="now-badge" id="nowBadge" style="color:var(--ink-faint)">—</div>
-        <div class="now-txt"><div class="l">Badge actuel</div><div class="v" id="nowRank">Non classé</div></div>
-        <div class="next-txt"><span id="nextLabel">Prochain palier</span><b id="nextInfo">—</b></div>
-      </div>
-    </section>
-    <section class="card">
-      <div class="card-title"><div class="icon-chip">⏳</div><div><h2>Temps restant</h2></div></div>
-      <div class="card-sub">Jusqu'à la fin de saison.</div>
-      <div class="count-big" id="daysLeft">—</div><div class="count-lbl" id="daysLabel">jours restants</div>
-    </section>
-    <section class="card">
-      <div class="card-title"><div class="icon-chip">📊</div><div><h2>Tes stats</h2></div></div>
-      <div class="card-sub">Résumé de tes relevés.</div>
-      <div class="pills">
-        <div class="pill"><div class="v" id="sEntries">0</div><div class="k">Relevés</div></div>
-        <div class="pill"><div class="v" id="sBest">0</div><div class="k">Meilleur total</div></div>
-        <div class="pill"><div class="v" id="sLast">—</div><div class="k">Dernier gain</div></div>
-        <div class="pill"><div class="v" id="sPace">—</div><div class="k">Pts / jour requis</div></div>
-      </div>
-    </section>
-    <section class="card wide">
-      <div class="card-title"><div class="icon-chip">📈</div><div><h2>Progression</h2></div></div>
-      <div class="card-sub">Évolution de ton total de points.</div>
-      <svg id="chart" viewBox="0 0 800 230" preserveAspectRatio="none" style="display:none"></svg>
-      <div class="empty-chart" id="chartEmpty">Chargement…</div>
-    </section>
-    <section class="card wide">
-      <div class="card-title"><div class="icon-chip">✚</div><div><h2>Nouveau relevé</h2></div></div>
-      <div class="card-sub">Reporte ton total affiché en jeu.</div>
-      <div class="entry-row">
-        <div class="field"><label for="inPts">Total WT Points</label><input type="number" id="inPts" inputmode="numeric" placeholder="ex : 1240"></div>
-        <div class="field"><label for="inDate">Date</label><input type="date" id="inDate"></div>
-        <button class="btn-primary" id="addBtn">Ajouter</button>
-      </div>
-      <p class="hint">Gains par match (Cashout / Ranked) : sorti au round 1 = 2 pts, round 2 = 6 pts, finale perdue = 14 pts, finale gagnée = 25 pts. Les points ne sont jamais perdus.</p>
-    </section>
-    <section class="card wide">
-      <div class="card-title"><div class="icon-chip">🕘</div><div><h2>Historique</h2></div></div>
-      <div class="card-sub">Tes relevés, du plus récent au plus ancien.</div>
-      <ul class="hist" id="histList"></ul>
-      <div class="hist-empty" id="histEmpty">Rien enregistré.</div>
-    </section>
+  <div class="count-wrap"><span class="count-num" id="daysLeft">43</span><span class="count-unit" id="daysUnit">jours restants</span></div>
+  <p class="hero-sub">Objectif <b id="heroTarget">Émeraude 4</b>. Chaque match compte pour atteindre le badge avant la fin de saison.</p>
+  <div class="brandline">
+    <svg class="spark b-spark" viewBox="0 0 24 24" fill="none"><path d="M12 1 L13.3 10.7 L23 12 L13.3 13.3 L12 23 L10.7 13.3 L1 12 L10.7 10.7 Z" fill="#ff2247"/></svg>
+    finals<span class="tag">tracker</span>
   </div>
-  <div class="foot">DONNÉES STOCKÉES SUR TON SERVEUR — POSTGRESQL</div>
-</div>
+</header>
+<main class="content">
+  <section class="progress-block">
+    <svg class="spark corner-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg>
+    <div class="pg-head">
+      <div class="pg-target">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
+        <div><div class="l">Objectif</div><div class="v"><b id="targetRank">Émeraude 4</b> · <span id="targetPts">1 800</span> pts</div></div>
+      </div>
+      <div class="pg-now">
+        <div class="big" id="curPts">0</div><div class="small">points accumulés</div>
+        <button class="edit-link" id="openSettings">Changer l'objectif</button>
+      </div>
+    </div>
+    <div class="track"><div class="track-fill" id="trackFill" style="width:0%"></div><svg class="spark track-star" id="trackStar" viewBox="0 0 24 24" fill="none" style="left:0%"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="#ff2247"/></svg></div>
+    <div class="track-meta"><span class="cur" id="pctLabel">0 %</span><span id="remainLabel">1 800 pts restants</span></div>
+    <div class="badges-row">
+      <div class="badge-cell"><div class="badge-glyph" id="nowGlyph">—</div><div><div class="l">Badge actuel</div><div class="v" id="nowRank">Non classé</div></div></div>
+      <div class="badge-cell"><div class="badge-glyph" id="nextGlyph">—</div><div><div class="l" id="nextLabel">Prochain palier</div><div class="v" id="nextInfo">—</div></div></div>
+    </div>
+  </section>
+  <div class="sec-title"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg><h2>Ce qu'il te reste à faire</h2><div class="rule"></div><svg class="spark end-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg></div>
+  <div class="calc-row">
+    <div class="calc"><div class="lbl"><svg class="spark l-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg>Rythme requis</div><div class="num"><b id="perDay">0</b></div><div class="desc">points par jour à gagner sur les <b id="perDayDays">43</b> jours restants pour décrocher <b id="perDayTarget">Émeraude 4</b>.</div></div>
+    <div class="calc"><div class="lbl"><svg class="spark l-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg>Victoires nécessaires</div><div class="num"><b id="winsNeeded">0</b></div><div class="desc">finales gagnées (<b>25 pts</b> chacune) pour couvrir les <b id="winsRemain">0</b> points manquants. Soit ~<b id="winsPerDay">0</b>/jour.</div></div>
+  </div>
+  <div class="sec-title"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 15h4l3-8 4 12 2-5h5"/></svg><h2>Tes chiffres</h2><div class="rule"></div><svg class="spark end-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg></div>
+  <div class="stats">
+    <div class="stat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 4h16v4H4z"/><path d="M6 8v10a2 2 0 002 2h8a2 2 0 002-2V8"/><path d="M9 12h6"/></svg><div class="v" id="sEntries">0</div><div class="k">Relevés</div></div>
+    <div class="stat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 9V4h12v5a6 6 0 01-12 0z"/><path d="M6 6H3v2a3 3 0 003 3M18 6h3v2a3 3 0 01-3 3M9 20h6M12 15v5"/></svg><div class="v" id="sBest">0</div><div class="k">Meilleur total</div></div>
+    <div class="stat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 20V10M18 20V4M6 20v-4"/></svg><div class="v" id="sLast">—</div><div class="k">Dernier gain</div></div>
+    <div class="stat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13 2L4.5 13H12l-1 9 8.5-11H12l1-9z"/></svg><div class="v" id="sAvg">—</div><div class="k">Gain moyen / jour</div></div>
+  </div>
+  <div class="sec-title"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 3v18h18"/><path d="M6 16l4-5 3 2 5-8"/><circle cx="18" cy="5" r="1.4" fill="currentColor" stroke="none"/></svg><h2>Progression</h2><div class="rule"></div><svg class="spark end-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg></div>
+  <svg id="chart" viewBox="0 0 900 280" preserveAspectRatio="none" style="display:none"></svg>
+  <div class="chart-empty" id="chartEmpty">Aucun relevé pour l'instant.<br>Entre ton total de WT Points pour tracer ta trajectoire.</div>
+  <section class="entry">
+    <div class="field"><label for="inPts">Total WT Points</label><input type="number" id="inPts" inputmode="numeric" placeholder="ex : 1240"></div>
+    <div class="field"><label for="inDate">Date du relevé</label><input type="date" id="inDate"></div>
+    <button class="btn" id="addBtn">Enregistrer</button>
+  </section>
+  <p class="hint">Gains par match en Cashout / Ranked Cashout : éliminé au 1er round = 2 pts · au 2e round = 6 pts · finale perdue = 14 pts · finale gagnée = 25 pts. Les points ne se perdent jamais.</p>
+  <div class="sec-title"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><h2>Historique</h2><div class="rule"></div><svg class="spark end-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg></div>
+  <ul class="hist" id="histList"></ul>
+  <div class="hist-empty" id="histEmpty">Rien enregistré pour l'instant.</div>
+</main>
 <div class="modal-bg" id="modal">
   <div class="modal">
+    <svg class="spark m-spark" viewBox="0 0 24 24"><path d="M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z" fill="currentColor"/></svg>
+    <svg class="spark star-lg" viewBox="0 0 24 24" fill="none"><path d="M12 0 L13.4 10.6 L24 12 L13.4 13.4 L12 24 L10.6 13.4 L0 12 L10.6 10.6 Z" fill="#ff2247"/></svg>
     <h3>Ton objectif de saison</h3>
     <p class="sub">Le World Tour a des paliers fixes. Choisis ton badge cible et la date de fin de saison ; le total de points requis se règle tout seul.</p>
     <div class="field"><label for="setRank">Badge visé</label><select id="setRank"></select></div>
     <div class="field"><label for="setDate">Fin de saison</label><input type="date" id="setDate"></div>
-    <div class="modal-actions"><button class="btn-ghost" id="cancelSettings">Annuler</button><button class="btn-primary" id="saveSettings">Enregistrer</button></div>
+    <div class="modal-actions"><button class="btn-ghost" id="cancelSettings">Annuler</button><button class="btn" id="saveSettings">Enregistrer</button></div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -187,126 +221,114 @@
     {name:"\u00c9meraude 4",abbr:"E4",pts:1800},{name:"\u00c9meraude 3",abbr:"E3",pts:2000},
     {name:"\u00c9meraude 2",abbr:"E2",pts:2200},{name:"\u00c9meraude 1",abbr:"E1",pts:2400}
   ];
+  const WIN_PTS=25;
   const $=id=>document.getElementById(id);
-  let entries=[], settings={targetRank:"\u00c9meraude 4",endDate:"2026-10-22"};
-
+  let entries=[], settings={targetRank:"\u00c9meraude 4",endDate:defaultEnd()};
+  function defaultEnd(){const d=new Date();d.setDate(d.getDate()+43);return d.toISOString().slice(0,10)}
   function todayIso(){return new Date().toISOString().slice(0,10)}
   function fmt(n){return Math.round(n).toLocaleString("fr-FR")}
   function badgeByName(n){return BADGES.find(b=>b.name===n)}
   function targetPts(){const b=badgeByName(settings.targetRank);return b?b.pts:1800}
   function classify(pts){let current=null,next=BADGES[0];for(let i=0;i<BADGES.length;i++){if(pts>=BADGES[i].pts){current=BADGES[i];next=BADGES[i+1]||null}else{next=BADGES[i];break}}return {current,next}}
-
+  function daysLeft(){const end=new Date(settings.endDate+"T23:59:59");return Math.ceil((end-new Date())/(864e5))}
   let toastTimer;
   function toast(msg,isErr){const t=$("toast");t.textContent=msg;t.className="toast on"+(isErr?" err":"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className="toast"+(isErr?" err":""),2600)}
-
-  async function api(method,url,body){
-    const opt={method,headers:{"Content-Type":"application/json"}};
-    if(body)opt.body=JSON.stringify(body);
-    const r=await fetch(url,opt);
-    if(!r.ok)throw new Error("HTTP "+r.status);
-    return r.status===204?null:r.json();
-  }
-
+  async function api(method,url,body){const opt={method,headers:{"Content-Type":"application/json"}};if(body)opt.body=JSON.stringify(body);const r=await fetch(url,opt);if(!r.ok)throw new Error("HTTP "+r.status);return r.status===204?null:r.json()}
   BADGES.forEach(b=>{const o=document.createElement("option");o.value=b.name;o.textContent=b.name+" ("+b.pts+" pts)";$("setRank").appendChild(o)});
   $("inDate").value=todayIso();
-
+  function drawHeroLines(){
+    const svg=$("heroLines");const w=svg.clientWidth||window.innerWidth,h=svg.clientHeight||600;
+    svg.setAttribute("viewBox","0 0 "+w+" "+h);
+    const cy=h/2, cx=w/2;let g="";
+    // ligne horizontale traversante au centre (façon HUD The Finals)
+    g+='<line class="accent" x1="0" y1="'+cy+'" x2="'+(cx-70)+'" y2="'+cy+'"/>';
+    g+='<line class="accent" x1="'+(cx+70)+'" y1="'+cy+'" x2="'+w+'" y2="'+cy+'"/>';
+    // fines verticales décalées
+    g+='<line x1="'+(w*0.18)+'" y1="0" x2="'+(w*0.18)+'" y2="'+h+'"/>';
+    g+='<line x1="'+(w*0.82)+'" y1="0" x2="'+(w*0.82)+'" y2="'+h+'"/>';
+    // liseré cyan diagonal subtil dans un coin
+    g+='<line class="accent-cy" x1="0" y1="'+(h*0.16)+'" x2="'+(w*0.22)+'" y2="0"/>';
+    g+='<line class="accent-cy" x1="'+w+'" y1="'+(h*0.84)+'" x2="'+(w*0.78)+'" y2="'+h+'"/>';
+    svg.innerHTML=g;
+  }
   function sorted(){return [...entries].sort((a,b)=>a.date.localeCompare(b.date))}
-
   function render(){
-    const tgt=badgeByName(settings.targetRank);
-    $("targetRank").textContent=settings.targetRank;
-    $("targetPts").textContent=fmt(targetPts());
-    const es=sorted();
-    const cur=es.length?es[es.length-1].pts:0;
-    const goal=targetPts();
-    const pct=goal>0?Math.max(0,Math.min(100,(cur/goal)*100)):0;
-    $("barFill").style.width=pct+"%";
-    $("curPts").textContent=fmt(cur);
-    $("remainPts").textContent=fmt(Math.max(0,goal-cur));
-    $("pctLabel").textContent=Math.round(pct)+"%";
+    $("targetRank").textContent=settings.targetRank;$("heroTarget").textContent=settings.targetRank;$("perDayTarget").textContent=settings.targetRank;
+    const goal=targetPts();$("targetPts").textContent=fmt(goal);
+    const es=sorted();const cur=es.length?es[es.length-1].pts:0;
+    const remain=Math.max(0,goal-cur);const pct=goal>0?Math.max(0,Math.min(100,(cur/goal)*100)):0;
+    $("curPts").textContent=fmt(cur);$("trackFill").style.width=pct+"%";$("trackStar").style.left=pct+"%";
+    $("pctLabel").textContent=Math.round(pct)+" %";$("remainLabel").textContent=fmt(remain)+" pts restants";
     const c=classify(cur);
-    if(c.current){$("nowBadge").textContent=c.current.abbr;$("nowBadge").style.color="var(--magenta)";$("nowRank").textContent=c.current.name}
-    else{$("nowBadge").textContent="—";$("nowBadge").style.color="var(--ink-faint)";$("nowRank").textContent="Non classé"}
-    if(c.next){$("nextLabel").textContent="\u2192 "+c.next.name;$("nextInfo").textContent=fmt(c.next.pts-cur)+" pts"}
-    else{$("nextLabel").textContent="Palier max";$("nextInfo").textContent="\u2713"}
-    const end=new Date(settings.endDate+"T23:59:59");
-    const diff=Math.ceil((end-new Date())/(1000*60*60*24));
-    if(diff<0){$("daysLeft").textContent="0";$("daysLabel").textContent="saison terminée"}
-    else{$("daysLeft").textContent=diff;$("daysLabel").textContent=diff<=1?"jour restant":"jours restants"}
+    if(c.current){$("nowGlyph").textContent=c.current.abbr;$("nowGlyph").style.color="var(--red-soft)";$("nowRank").textContent=c.current.name}
+    else{$("nowGlyph").textContent="—";$("nowGlyph").style.color="var(--ink-faint)";$("nowRank").textContent="Non classé"}
+    if(c.next){$("nextGlyph").textContent=c.next.abbr;$("nextLabel").textContent="Prochain palier";$("nextInfo").textContent=c.next.name+" · "+fmt(c.next.pts-cur)+" pts"}
+    else{$("nextGlyph").textContent="\u2726";$("nextLabel").textContent="Statut";$("nextInfo").textContent="Palier maximum atteint"}
+    const d=daysLeft();
+    if(d<0){$("daysLeft").textContent="0";$("daysUnit").textContent="saison terminée"}
+    else{$("daysLeft").textContent=d;$("daysUnit").textContent=d<=1?"jour restant":"jours restants"}
+    $("perDayDays").textContent=Math.max(0,d);
+    const perDay=(d>0&&remain>0)?Math.ceil(remain/d):0;$("perDay").textContent=remain<=0?"0":fmt(perDay);
+    const wins=remain>0?Math.ceil(remain/WIN_PTS):0;$("winsNeeded").textContent=fmt(wins);$("winsRemain").textContent=fmt(remain);
+    const winsPerDay=(d>0&&wins>0)?(wins/d):0;$("winsPerDay").textContent=winsPerDay>0?winsPerDay.toFixed(1):"0";
     $("sEntries").textContent=es.length;
-    const best=es.reduce((m,e)=>Math.max(m,e.pts),0);
-    $("sBest").textContent=es.length?fmt(best):"0";
+    const best=es.reduce((m,e)=>Math.max(m,e.pts),0);$("sBest").textContent=es.length?fmt(best):"0";
     const sLast=$("sLast");
-    if(es.length>=2){const d=es[es.length-1].pts-es[es.length-2].pts;sLast.textContent=(d>=0?"+":"")+fmt(d);sLast.className="v "+(d>=0?"pos":"neg")}
+    if(es.length>=2){const dd=es[es.length-1].pts-es[es.length-2].pts;sLast.textContent=(dd>=0?"+":"")+fmt(dd);sLast.className="v "+(dd>=0?"pos":"")}
     else{sLast.textContent="—";sLast.className="v"}
-    const remain=Math.max(0,goal-cur);const sPace=$("sPace");
-    if(diff>0&&remain>0){sPace.textContent=fmt(Math.ceil(remain/diff));sPace.className="v"}
-    else if(remain<=0){sPace.textContent="\u2713";sPace.className="v pos"}
-    else{sPace.textContent="—";sPace.className="v"}
+    const sAvg=$("sAvg");
+    if(es.length>=2){const first=es[0],last=es[es.length-1];const span=Math.max(1,Math.round((new Date(last.date)-new Date(first.date))/864e5));const avg=(last.pts-first.pts)/span;sAvg.textContent=(avg>=0?"+":"")+fmt(avg)}
+    else{sAvg.textContent="—"}
     drawChart(es,goal);drawHist(es);
   }
   function drawChart(es,goal){
     const chart=$("chart"),empty=$("chartEmpty");
-    if(es.length<1){chart.style.display="none";empty.style.display="grid";empty.textContent="Aucun relevé pour l'instant. Entre ton total ci-dessous.";return}
+    if(es.length<1){chart.style.display="none";empty.style.display="grid";return}
     chart.style.display="block";empty.style.display="none";
-    const W=800,H=230,pad={t:18,r:14,b:26,l:52};
+    const W=900,H=280,pad={t:20,r:16,b:28,l:56};
     const iw=W-pad.l-pad.r,ih=H-pad.t-pad.b;
     const vals=es.map(e=>e.pts).concat([goal]);
-    let min=Math.min(...vals,0),max=Math.max(...vals);
-    if(max===min)max=min+1;
-    const padV=(max-min)*0.08;max+=padV;min=Math.max(0,min-padV);
-    const n=es.length;
-    const x=i=>pad.l+(n===1?iw/2:(i/(n-1))*iw);
-    const y=v=>pad.t+ih-((v-min)/(max-min))*ih;
+    let min=Math.min(...vals,0),max=Math.max(...vals);if(max===min)max=min+1;
+    const padV=(max-min)*0.1;max+=padV;min=Math.max(0,min-padV);
+    const n=es.length;const x=i=>pad.l+(n===1?iw/2:(i/(n-1))*iw);const y=v=>pad.t+ih-((v-min)/(max-min))*ih;
     let g="";
     for(let k=0;k<=4;k++){const gy=pad.t+(k/4)*ih;const val=max-(k/4)*(max-min);
-      g+='<line x1="'+pad.l+'" y1="'+gy+'" x2="'+(W-pad.r)+'" y2="'+gy+'" stroke="var(--grid)" stroke-width="1"/>';
-      g+='<text x="'+(pad.l-8)+'" y="'+(gy+4)+'" fill="var(--ink-faint)" font-size="11" text-anchor="end" font-family="monospace">'+fmt(val)+'</text>';}
+      g+='<line x1="'+pad.l+'" y1="'+gy+'" x2="'+(W-pad.r)+'" y2="'+gy+'" stroke="rgba(255,255,255,.06)" stroke-width="1"/>';
+      g+='<text x="'+(pad.l-10)+'" y="'+(gy+4)+'" fill="#565d6a" font-size="11" text-anchor="end" font-family="monospace">'+fmt(val)+'</text>'}
     if(goal<=max&&goal>=min){const ty=y(goal);
-      g+='<line x1="'+pad.l+'" y1="'+ty+'" x2="'+(W-pad.r)+'" y2="'+ty+'" stroke="var(--magenta)" stroke-width="1.5" stroke-dasharray="6 5" opacity=".7"/>';
-      g+='<text x="'+(W-pad.r)+'" y="'+(ty-6)+'" fill="var(--magenta)" font-size="11" text-anchor="end" font-family="monospace">OBJECTIF</text>';}
+      g+='<line x1="'+pad.l+'" y1="'+ty+'" x2="'+(W-pad.r)+'" y2="'+ty+'" stroke="#ff2247" stroke-width="1" stroke-dasharray="5 5" opacity=".6"/>';
+      g+='<text x="'+(W-pad.r)+'" y="'+(ty-8)+'" fill="#ff4d68" font-size="11" text-anchor="end" font-family="monospace" letter-spacing="1">OBJECTIF</text>'}
     const pts=es.map((e,i)=>[x(i),y(e.pts)]);
     const line=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
     if(n>=2){const area=line+" L "+x(n-1)+" "+(pad.t+ih)+" L "+x(0)+" "+(pad.t+ih)+" Z";
-      g+='<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--magenta)" stop-opacity=".25"/><stop offset="1" stop-color="var(--magenta)" stop-opacity="0"/></linearGradient></defs>';
+      g+='<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff2247" stop-opacity=".2"/><stop offset="1" stop-color="#ff2247" stop-opacity="0"/></linearGradient></defs>';
       g+='<path d="'+area+'" fill="url(#ag)"/>';
-      g+='<path d="'+line+'" fill="none" stroke="var(--magenta)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';}
-    pts.forEach(p=>{g+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="var(--bg)" stroke="var(--magenta)" stroke-width="2.5"/>'});
+      g+='<path d="'+line+'" fill="none" stroke="#ff4d68" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'}
+    pts.forEach(p=>{g+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="#08090c" stroke="#ff4d68" stroke-width="2"/>'});
     chart.innerHTML=g;
   }
   function drawHist(es){
-    const list=$("histList"),empty=$("histEmpty");
-    const rev=[...es].reverse();
+    const list=$("histList"),empty=$("histEmpty");const rev=[...es].reverse();
     if(!rev.length){list.innerHTML="";empty.style.display="block";return}
     empty.style.display="none";
     list.innerHTML=rev.map((e,ri)=>{
-      const idx=es.length-1-ri;
-      const prev=idx>0?es[idx-1].pts:null;
-      const d=prev===null?null:e.pts-prev;
+      const idx=es.length-1-ri;const prev=idx>0?es[idx-1].pts:null;const d=prev===null?null:e.pts-prev;
       const dtxt=d===null?'<span class="delta"></span>':'<span class="delta '+(d>=0?'pos':'neg')+'">'+(d>=0?'+':'')+fmt(d)+'</span>';
-      const c=classify(e.pts);
-      const btxt=c.current?c.current.name:"Non classé";
+      const c=classify(e.pts);const btxt=c.current?c.current.name:"Non classé";
       const dateFr=new Date(e.date+"T00:00:00").toLocaleDateString("fr-FR",{day:"2-digit",month:"short"});
-      return '<li><span class="date">'+dateFr+'</span><span class="rs">'+fmt(e.pts)+' pts</span><span class="badge-mini">'+btxt+'</span>'+dtxt+'<button class="del" data-id="'+e.id+'" title="Supprimer">\u2715</button></li>';
+      const num=String(es.length-ri).padStart(2,"0");
+      return '<li><span class="idx mono">'+num+'</span><span class="date">'+dateFr+'</span><span class="pts mono">'+fmt(e.pts)+'</span><span class="badge-mini">'+btxt+'</span>'+dtxt+'<button class="del" data-id="'+e.id+'" title="Supprimer">\u00d7</button></li>';
     }).join("");
     list.querySelectorAll(".del").forEach(b=>{b.onclick=async()=>{
       try{await api("DELETE","/api/entries/"+b.dataset.id);entries=entries.filter(x=>String(x.id)!==String(b.dataset.id));render();toast("Relevé supprimé")}
-      catch(e){toast("Erreur de suppression",true)}
-    }});
+      catch(e){toast("Erreur de suppression",true)}}});
   }
-
   $("addBtn").onclick=async()=>{
-    const pts=parseInt($("inPts").value,10);
-    const date=$("inDate").value||todayIso();
+    const pts=parseInt($("inPts").value,10);const date=$("inDate").value||todayIso();
     if(isNaN(pts)){$("inPts").focus();return}
     $("addBtn").disabled=true;
-    try{
-      const saved=await api("POST","/api/entries",{pts,date});
-      entries=entries.filter(e=>e.date!==saved.date);
-      entries.push(saved);
-      $("inPts").value="";render();toast("Relevé enregistré");
-    }catch(e){toast("Erreur d'enregistrement",true)}
-    finally{$("addBtn").disabled=false}
+    try{const saved=await api("POST","/api/entries",{pts,date});entries=entries.filter(e=>e.date!==saved.date);entries.push(saved);$("inPts").value="";render();toast("Relevé enregistré")}
+    catch(e){toast("Erreur d'enregistrement",true)}finally{$("addBtn").disabled=false}
   };
   $("inPts").addEventListener("keydown",e=>{if(e.key==="Enter")$("addBtn").click()});
   $("openSettings").onclick=()=>{$("setRank").value=settings.targetRank;$("setDate").value=settings.endDate;$("modal").classList.add("on")};
@@ -317,15 +339,11 @@
     try{const s=await api("PUT","/api/settings",{targetRank,endDate});settings=s;render();$("modal").classList.remove("on");toast("Objectif mis à jour")}
     catch(e){toast("Erreur d'enregistrement",true)}
   };
-
+  window.addEventListener("resize",drawHeroLines);
   async function boot(){
-    try{
-      const [s,e]=await Promise.all([api("GET","/api/settings"),api("GET","/api/entries")]);
-      settings=s;entries=e;render();
-    }catch(err){
-      $("chartEmpty").textContent="Impossible de contacter le serveur.";
-      toast("Connexion au serveur impossible",true);
-    }
+    drawHeroLines();
+    try{const [s,e]=await Promise.all([api("GET","/api/settings"),api("GET","/api/entries")]);settings=s;entries=e;render()}
+    catch(err){$("chartEmpty").textContent="Impossible de contacter le serveur.";toast("Connexion au serveur impossible",true);render()}
   }
   boot();
 })();
